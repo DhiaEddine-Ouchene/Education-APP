@@ -2,24 +2,77 @@ import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import Modal from '../components/Modal';
 import { compressImage } from '../utils/compress';
-import { 
-  Sparkles, 
-  Plus, 
-  Trash2, 
-  Play, 
-  AlertCircle, 
-  Users, 
-  BookOpen, 
-  Layers, 
+import {
+  Sparkles,
+  Plus,
+  Trash2,
+  Play,
+  AlertCircle,
+  Users,
+  BookOpen,
+  Layers,
   CheckCircle,
-  Eye,
-  Settings,
   CreditCard,
   Crown
 } from 'lucide-react';
 
+/* Layout-only style objects (theme colours come from index.css classes). */
+const s = {
+  loading: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '14px', color: 'var(--text-muted)' },
+  alertClose: { marginLeft: 'auto', background: 'transparent', border: 'none', color: 'inherit', fontSize: '20px', cursor: 'pointer', lineHeight: 1 },
+  panel: { padding: '24px', marginBottom: '24px' },
+  panelTitle: { fontSize: '18px', fontWeight: 700, marginBottom: '16px' },
+  accuracyPill: { background: 'color-mix(in srgb, var(--color-success), transparent 82%)', color: 'var(--color-success)', padding: '2px 10px', borderRadius: '999px', fontWeight: 700, fontSize: '12px' },
+  cardGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' },
+  setCard: { display: 'flex', flexDirection: 'column', gap: '12px', padding: '20px' },
+  setLangRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  metaCount: { fontSize: '12px', color: 'var(--text-muted)' },
+  cardTitle: { fontSize: '17px', fontWeight: 700 },
+  cardDesc: { fontSize: '13px' },
+  footerBtns: { display: 'flex', gap: '8px', marginTop: 'auto', alignItems: 'center' },
+  btnFlex: { flex: 1 },
+  emptyBox: { padding: '44px 24px', textAlign: 'center', color: 'var(--text-muted)' },
+  courseStack: { display: 'flex', flexDirection: 'column', gap: '14px' },
+  courseRow: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', padding: '20px' },
+  courseMeta: { display: 'flex', flexWrap: 'wrap', gap: '14px', fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px' },
+  linkedTag: { color: 'var(--color-success)', fontWeight: 600 },
+  btnRow: { display: 'flex', gap: '8px' },
+  langSelectRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' },
+  aiBox: { background: 'var(--glass)', border: '1px solid var(--border-strong)', borderRadius: '14px', padding: '16px' },
+  aiHeader: { display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-color)', fontWeight: 700, fontSize: '13px', marginBottom: '12px' },
+  aiHeaderBetween: { display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-color)', fontWeight: 700, fontSize: '13px', marginBottom: '12px', justifyContent: 'space-between' },
+  aiTitle: { display: 'flex', alignItems: 'center', gap: '8px' },
+  aiInputRow: { display: 'flex', gap: '8px' },
+  aiTrialNote: { fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' },
+  wordsHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' },
+  wordsList: { display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '300px', overflowY: 'auto', paddingRight: '4px' },
+  wordRow: { display: 'grid', gridTemplateColumns: '1fr 1fr 0.8fr auto', gap: '8px', alignItems: 'center' },
+  extractedBox: { marginTop: '14px', background: 'var(--bg-elevated)', borderRadius: '10px', padding: '12px' },
+  extractedChip: { fontSize: '13px', padding: '5px 0', borderBottom: '1px solid var(--border-color)' },
+  brandingGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' },
+  colorGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
+  colorInput: { width: '100%', height: '42px', borderRadius: '10px', border: '1px solid var(--border-color)', cursor: 'pointer', padding: '2px', background: 'var(--bg-elevated)' },
+  checkboxRow: { display: 'flex', alignItems: 'center', gap: '10px', margin: '16px 0' },
+  previewFrame: { border: '1px solid var(--border-color)', borderRadius: '14px', overflow: 'hidden', boxShadow: 'var(--shadow-md)' },
+  formMargin: { marginBottom: '16px' },
+  hintText: { fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' },
+  sectionGap: { marginTop: '20px' },
+  planStatus: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px', flexWrap: 'wrap', padding: '24px', marginBottom: '28px' },
+  planBadges: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' },
+  planUsage: { display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '10px', fontSize: '14px' },
+  upgradeCallout: { display: 'flex', alignItems: 'center', gap: '14px', background: 'var(--glass-strong)', borderRadius: '14px', padding: '16px 20px', color: 'var(--primary-color)' },
+  priceAmount: { fontSize: '32px', fontWeight: 800, margin: '8px 0 16px' },
+  pricePeriod: { fontSize: '14px', fontWeight: 500, color: 'var(--text-muted)' },
+  planTitle: { fontSize: '18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' },
+  popularTag: { background: 'linear-gradient(120deg,var(--primary-color),var(--secondary-color))', color: '#06222b', fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', textTransform: 'uppercase' },
+  featureList: { listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', margin: '0 0 18px', fontSize: '14px' },
+  featureOff: { color: 'var(--text-muted)', textDecoration: 'line-through' },
+  planCard: { padding: '24px', display: 'flex', flexDirection: 'column' },
+  fullBtn: { width: '100%', marginTop: 'auto' },
+  iconGap: { marginRight: '6px' }
+};
+
 export default function TeacherDashboard({ activeTab, user, organization, updateBranding, onLaunchGame }) {
-  // Global State
   const [stats, setStats] = useState(null);
   const [students, setStudents] = useState([]);
   const [sets, setSets] = useState([]);
@@ -28,16 +81,13 @@ export default function TeacherDashboard({ activeTab, user, organization, update
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Modals / Editors State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(''); // 'student', 'set', 'course'
-  
-  // Forms State
+  const [modalType, setModalType] = useState('');
+
   const [studentForm, setStudentForm] = useState({ name: '', email: '', password: '' });
   const [setForm, setSetForm] = useState({ id: null, title: '', description: '', source_lang: 'en', target_lang: 'es', words: [] });
   const [courseForm, setCourseForm] = useState({ id: null, title: '', content: '', word_set_id: '' });
-  
-  // AI State helpers
+
   const [aiTopic, setAiTopic] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [extractedWords, setExtractedWords] = useState([]);
@@ -46,42 +96,36 @@ export default function TeacherDashboard({ activeTab, user, organization, update
   const [brandForm, setBrandForm] = useState({
     name: organization?.name || '',
     logo_data: organization?.logo_data || null,
-    theme_primary: organization?.theme_primary || '#4F46E5',
-    theme_secondary: organization?.theme_secondary || '#818CF8',
+    theme_primary: organization?.theme_primary || '#25D1F4',
+    theme_secondary: organization?.theme_secondary || '#A3E635',
     dark_mode: organization?.dark_mode || false
   });
 
-  // Sync brandForm when organization prop updates (e.g. after login)
   useEffect(() => {
     if (organization) {
       setBrandForm({
         name: organization.name || '',
         logo_data: organization.logo_data || null,
-        theme_primary: organization.theme_primary || '#4F46E5',
-        theme_secondary: organization.theme_secondary || '#818CF8',
+        theme_primary: organization.theme_primary || '#25D1F4',
+        theme_secondary: organization.theme_secondary || '#A3E635',
         dark_mode: organization.dark_mode || false
       });
     }
   }, [organization]);
 
-  // Fetch initial dashboard metrics
   const loadDashboardData = async () => {
     try {
       setLoading(true);
       setError('');
-      
       const [setsData, coursesData, studentsData, reportData] = await Promise.all([
         api.get('/sets'),
         api.get('/courses'),
         api.get('/users/students'),
         api.get('/sets/reports/engagement')
       ]);
-
       setSets(setsData);
       setCourses(coursesData);
       setStudents(studentsData);
-      
-      // Calculate basic aggregates
       setStats({
         setsCount: setsData.length,
         coursesCount: coursesData.length,
@@ -89,7 +133,6 @@ export default function TeacherDashboard({ activeTab, user, organization, update
         totalPlays: reportData.length,
         reports: reportData
       });
-
     } catch (e) {
       setError(e.message || 'Failed to load teacher stats.');
     } finally {
@@ -101,7 +144,6 @@ export default function TeacherDashboard({ activeTab, user, organization, update
     loadDashboardData();
   }, [activeTab]);
 
-  // Handle student creation
   const handleAddStudent = async (e) => {
     e.preventDefault();
     setError('');
@@ -117,7 +159,6 @@ export default function TeacherDashboard({ activeTab, user, organization, update
     }
   };
 
-  // Handle student deletion
   const handleDeleteStudent = async (id) => {
     if (!window.confirm('Are you sure you want to remove this student account?')) return;
     try {
@@ -129,12 +170,8 @@ export default function TeacherDashboard({ activeTab, user, organization, update
     }
   };
 
-  // Word set operations
   const handleAddWordRow = () => {
-    setSetForm({
-      ...setForm,
-      words: [...setForm.words, { term: '', translation: '', hint: '' }]
-    });
+    setSetForm({ ...setForm, words: [...setForm.words, { term: '', translation: '', hint: '' }] });
   };
 
   const handleRemoveWordRow = (idx) => {
@@ -149,7 +186,6 @@ export default function TeacherDashboard({ activeTab, user, organization, update
     setSetForm({ ...setForm, words: updated });
   };
 
-  // AI Autofill Trigger
   const handleAiAutofill = async () => {
     if (!aiTopic) return;
     setAiLoading(true);
@@ -160,10 +196,7 @@ export default function TeacherDashboard({ activeTab, user, organization, update
         source_lang: setForm.source_lang,
         target_lang: setForm.target_lang
       });
-      setSetForm({
-        ...setForm,
-        words: [...setForm.words, ...res.words]
-      });
+      setSetForm({ ...setForm, words: [...setForm.words, ...res.words] });
       setSuccess(`Generated ${res.words.length} vocabulary words!`);
       setAiTopic('');
     } catch (e) {
@@ -173,26 +206,20 @@ export default function TeacherDashboard({ activeTab, user, organization, update
     }
   };
 
-  // Save Word Set
   const handleSaveWordSet = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
-    
-    // Filter empty terms
-    const cleanWords = setForm.words.filter(w => w.term && w.translation);
+    const cleanWords = setForm.words.filter((w) => w.term && w.translation);
     if (cleanWords.length === 0) {
       setError('Please add at least one vocabulary term and translation.');
       return;
     }
-
     try {
       if (setForm.id) {
-        // Edit Mode
         await api.put(`/sets/${setForm.id}`, { ...setForm, words: cleanWords });
         setSuccess('Vocabulary set updated successfully!');
       } else {
-        // Create Mode
         await api.post('/sets', { ...setForm, words: cleanWords });
         setSuccess('Vocabulary set created successfully!');
       }
@@ -203,7 +230,6 @@ export default function TeacherDashboard({ activeTab, user, organization, update
     }
   };
 
-  // Course extraction AI trigger
   const handleAiExtract = async () => {
     if (!courseForm.content) {
       setError('Please write or paste course textbook content first.');
@@ -212,11 +238,7 @@ export default function TeacherDashboard({ activeTab, user, organization, update
     setExtractLoading(true);
     setError('');
     try {
-      const res = await api.post('/ai/extract', {
-        text: courseForm.content,
-        source_lang: 'en',
-        target_lang: 'es'
-      });
+      const res = await api.post('/ai/extract', { text: courseForm.content, source_lang: 'en', target_lang: 'es' });
       setExtractedWords(res.words);
       setSuccess(`Extracted ${res.words.length} key vocabulary terms! Review them below.`);
     } catch (e) {
@@ -226,16 +248,12 @@ export default function TeacherDashboard({ activeTab, user, organization, update
     }
   };
 
-  // Save Course Lesson
   const handleSaveCourse = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
-
     try {
       let linkedSetId = courseForm.word_set_id;
-      
-      // If AI extracted terms are present, create a linked Word Set automatically!
       if (extractedWords.length > 0) {
         const setRes = await api.post('/sets', {
           title: `Vocab: ${courseForm.title}`,
@@ -246,9 +264,7 @@ export default function TeacherDashboard({ activeTab, user, organization, update
         });
         linkedSetId = setRes.id;
       }
-
       const payload = { ...courseForm, word_set_id: linkedSetId || null };
-      
       if (courseForm.id) {
         await api.put(`/courses/${courseForm.id}`, payload);
         setSuccess('Course lesson updated successfully!');
@@ -256,7 +272,6 @@ export default function TeacherDashboard({ activeTab, user, organization, update
         await api.post('/courses', payload);
         setSuccess('Course lesson created successfully!');
       }
-
       setIsModalOpen(false);
       setExtractedWords([]);
       loadDashboardData();
@@ -265,22 +280,18 @@ export default function TeacherDashboard({ activeTab, user, organization, update
     }
   };
 
-  // Handle Logo Upload and Compression
   const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     try {
-      // Resize/compress to max width 180px, max height 60px
       const base64Logo = await compressImage(file, 180, 60);
-      setBrandForm(prev => ({ ...prev, logo_data: base64Logo }));
+      setBrandForm((prev) => ({ ...prev, logo_data: base64Logo }));
       setSuccess('Logo loaded and optimized successfully (client-side resize).');
     } catch (err) {
       setError('Image compression failed. Choose a different PNG/JPG file.');
     }
   };
 
-  // Save branding styles
   const handleSaveBranding = async (e) => {
     e.preventDefault();
     setError('');
@@ -294,7 +305,6 @@ export default function TeacherDashboard({ activeTab, user, organization, update
     }
   };
 
-  // Subscription Checkout Trigger
   const handleSubscriptionCheckout = async (plan) => {
     setError('');
     setSuccess('');
@@ -304,8 +314,6 @@ export default function TeacherDashboard({ activeTab, user, organization, update
         successUrl: `${window.location.origin}${window.location.pathname}?billing=success`,
         cancelUrl: `${window.location.origin}${window.location.pathname}?billing=cancel`
       });
-
-      // Redirect user to Stripe or Mock Checkout Portal
       if (res.url) {
         window.location.href = res.url;
       } else {
@@ -316,10 +324,30 @@ export default function TeacherDashboard({ activeTab, user, organization, update
     }
   };
 
+  const aiTrialsLeft = Math.max(0, 3 - (organization?.ai_generations_count || 0));
+  const isFreePlan = organization?.plan === 'Free';
+
+  const previewHeaderStyle = {
+    padding: '15px 20px',
+    background: brandForm.dark_mode ? '#0C1518' : '#FFFFFF',
+    borderBottom: `2px solid ${brandForm.theme_primary}`,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  };
+  const previewBodyStyle = { padding: '24px', background: brandForm.dark_mode ? '#11242B' : '#F8FAFC', minHeight: '170px' };
+  const previewBrandText = { fontWeight: 800, fontSize: '18px', color: brandForm.theme_primary };
+  const previewPreviewTag = { fontSize: '11px', color: brandForm.dark_mode ? '#8FB6C0' : '#64748B' };
+  const previewSubtitle = { fontSize: '13px', color: brandForm.dark_mode ? '#8FB6C0' : '#475569', marginBottom: '16px' };
+  const previewBtnRow = { display: 'flex', gap: '12px' };
+  const previewPrimaryBtn = { padding: '11px 18px', background: brandForm.theme_primary, color: '#06222b', borderRadius: '8px', fontWeight: 700, fontSize: '13px' };
+  const previewSecondaryBtn = { padding: '11px 18px', background: 'transparent', color: brandForm.theme_secondary, border: `1px solid ${brandForm.theme_secondary}`, borderRadius: '8px', fontWeight: 700, fontSize: '13px' };
+  const previewLogo = { maxHeight: '34px' };
+
   if (loading && !stats) {
     return (
-      <div className="flex-center" style={{ height: '50vh', flexDirection: 'column', gap: '15px' }}>
-        <div style={{ width: '30px', height: '30px', border: '3px solid var(--border-color)', borderTopColor: 'var(--primary-color)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+      <div style={s.loading}>
+        <div className="loading-spinner" />
         <p>Fetching school records...</p>
       </div>
     );
@@ -327,37 +355,33 @@ export default function TeacherDashboard({ activeTab, user, organization, update
 
   return (
     <div className="teacher-dashboard-container animate-fade">
-      {/* Alert Notices */}
       {error && (
-        <div className="error-alert animate-scale" style={{ marginBottom: '20px' }}>
+        <div className="error-alert animate-scale" style={s.formMargin}>
           <AlertCircle size={18} />
           <span>{error}</span>
-          <button onClick={() => setError('')} style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>×</button>
+          <button onClick={() => setError('')} style={s.alertClose}>×</button>
         </div>
       )}
       {success && (
-        <div className="success-alert animate-scale" style={{ marginBottom: '20px' }}>
+        <div className="success-alert animate-scale" style={s.formMargin}>
           <CheckCircle size={18} />
           <span>{success}</span>
-          <button onClick={() => setSuccess('')} style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>×</button>
+          <button onClick={() => setSuccess('')} style={s.alertClose}>×</button>
         </div>
       )}
 
-      {/* RENDER ACTIVE TAB */}
-
-      {/* TAB 1: OVERVIEW DASHBOARD */}
       {activeTab === 'dashboard' && stats && (
         <div>
-          <div className="page-header" style={{ marginBottom: '30px' }}>
+          <div className="page-header">
             <div>
               <h1 className="page-title">School Insights</h1>
               <p className="page-subtitle">Welcome back, {user?.name}. Here is what is happening at {organization?.name || 'your school'}.</p>
             </div>
           </div>
 
-          <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '35px' }}>
+          <div className="stats-grid">
             <div className="stats-card">
-              <div className="stats-icon-wrapper"><Users size={22} style={{ color: 'var(--primary-color)' }} /></div>
+              <div className="stats-icon-wrapper"><Users size={22} /></div>
               <div>
                 <div className="stats-label">Active Students</div>
                 <div className="stats-value">{stats.studentsCount}</div>
@@ -365,7 +389,7 @@ export default function TeacherDashboard({ activeTab, user, organization, update
               </div>
             </div>
             <div className="stats-card">
-              <div className="stats-icon-wrapper"><Layers size={22} style={{ color: 'var(--primary-color)' }} /></div>
+              <div className="stats-icon-wrapper"><Layers size={22} /></div>
               <div>
                 <div className="stats-label">Vocabulary Sets</div>
                 <div className="stats-value">{stats.setsCount}</div>
@@ -373,7 +397,7 @@ export default function TeacherDashboard({ activeTab, user, organization, update
               </div>
             </div>
             <div className="stats-card">
-              <div className="stats-icon-wrapper"><BookOpen size={22} style={{ color: 'var(--primary-color)' }} /></div>
+              <div className="stats-icon-wrapper"><BookOpen size={22} /></div>
               <div>
                 <div className="stats-label">Course Lessons</div>
                 <div className="stats-value">{stats.coursesCount}</div>
@@ -381,19 +405,19 @@ export default function TeacherDashboard({ activeTab, user, organization, update
               </div>
             </div>
             <div className="stats-card">
-              <div className="stats-icon-wrapper"><Play size={22} style={{ color: 'var(--primary-color)' }} /></div>
+              <div className="stats-icon-wrapper"><Play size={22} /></div>
               <div>
                 <div className="stats-label">Games Played</div>
                 <div className="stats-value">{stats.totalPlays}</div>
-                <div className="stats-change">Total students session completions</div>
+                <div className="stats-change">Total student session completions</div>
               </div>
             </div>
           </div>
 
-          <div className="card-item" style={{ padding: '25px' }}>
-            <h3 style={{ marginBottom: '20px' }}>Recent Student Play Activity</h3>
+          <div className="card-item" style={s.panel}>
+            <h3 style={s.panelTitle}>Recent Student Play Activity</h3>
             {stats.reports.length === 0 ? (
-              <p className="text-muted" style={{ padding: '20px 0', textAlign: 'center' }}>No students have completed vocabulary games yet. Send them a lesson to start!</p>
+              <p className="text-muted">No students have completed vocabulary games yet. Send them a lesson to start!</p>
             ) : (
               <table className="admin-table">
                 <thead>
@@ -408,16 +432,12 @@ export default function TeacherDashboard({ activeTab, user, organization, update
                 </thead>
                 <tbody>
                   {stats.reports.slice(0, 10).map((r, idx) => (
-                    <tr key={idx}>
-                      <td style={{ fontWeight: '600' }}>{r.student_name}</td>
+                    <tr key={idx} className="table-hover-row">
+                      <td className="font-bold">{r.student_name}</td>
                       <td>{r.set_title}</td>
-                      <td style={{ textTransform: 'capitalize' }}>{r.game_mode}</td>
+                      <td>{r.game_mode}</td>
                       <td>{r.score} / {r.total_words}</td>
-                      <td>
-                        <span style={{ fontWeight: '700', color: (r.score/r.total_words) >= 0.8 ? '#10B981' : '#F59E0B' }}>
-                          {Math.round((r.score / r.total_words) * 100)}%
-                        </span>
-                      </td>
+                      <td><span style={s.accuracyPill}>{Math.round((r.score / r.total_words) * 100)}%</span></td>
                       <td>{new Date(r.completed_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
@@ -428,54 +448,43 @@ export default function TeacherDashboard({ activeTab, user, organization, update
         </div>
       )}
 
-      {/* TAB 2: VOCABULARY SETS */}
       {activeTab === 'sets' && (
         <div>
-          <div className="page-header" style={{ marginBottom: '30px' }}>
+          <div className="page-header">
             <div>
               <h1 className="page-title">Vocabulary Game Sets</h1>
               <p className="page-subtitle">Add terms and create interactive matching and quiz games for your students.</p>
             </div>
-            <button 
+            <button
               onClick={() => {
                 setSetForm({ id: null, title: '', description: '', source_lang: 'en', target_lang: 'es', words: [{ term: '', translation: '', hint: '' }] });
                 setModalType('set');
                 setIsModalOpen(true);
-              }} 
+              }}
               className="action-button-primary"
             >
-              <Plus size={18} style={{ marginRight: '6px' }} />
+              <Plus size={18} style={s.iconGap} />
               Create Word Set
             </button>
           </div>
 
-          <div className="vocab-sets-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '25px' }}>
+          <div style={s.cardGrid}>
             {sets.length === 0 ? (
-              <div style={{ gridColumn: 'span 3', padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+              <div className="card-item" style={s.emptyBox}>
                 No vocabulary sets created yet. Click "Create Word Set" or use AI autofill to build your first one!
               </div>
             ) : (
               sets.map((set) => (
-                <div key={set.id} className="card-item hover-translate" style={{ padding: '25px', display: 'flex', flexDirection: 'column', justifySelf: 'stretch', height: '100%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                    <span className="lang-tag" style={{ background: 'var(--primary-glow)', color: 'var(--primary-color)' }}>
-                      {set.source_lang.toUpperCase()} → {set.target_lang.toUpperCase()}
-                    </span>
-                    <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{set.word_count} words</span>
+                <div key={set.id} className="card-item hover-translate" style={s.setCard}>
+                  <div style={s.setLangRow}>
+                    <span className="lang-tag">{set.source_lang.toUpperCase()} → {set.target_lang.toUpperCase()}</span>
+                    <span style={s.metaCount}>{set.word_count} words</span>
                   </div>
-                  
-                  <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>{set.title}</h3>
-                  <p className="text-muted" style={{ fontSize: '14px', flex: 1, marginBottom: '20px' }}>{set.description || 'No description provided.'}</p>
-                  
-                  <div className="card-footer-buttons" style={{ display: 'flex', gap: '10px', marginTop: 'auto' }}>
-                    <button 
-                      onClick={() => onLaunchGame(set.id, 'matching')}
-                      className="action-button-primary"
-                      style={{ flex: 1, fontSize: '13px', padding: '8px 12px' }}
-                    >
-                      Play Game
-                    </button>
-                    <button 
+                  <h3 style={s.cardTitle}>{set.title}</h3>
+                  <p className="text-muted" style={s.cardDesc}>{set.description || 'No description provided.'}</p>
+                  <div style={s.footerBtns}>
+                    <button onClick={() => onLaunchGame(set.id, 'matching')} className="action-button-primary" style={s.btnFlex}>Play Game</button>
+                    <button
                       onClick={async () => {
                         const detailed = await api.get(`/sets/${set.id}`);
                         setSetForm(detailed);
@@ -483,11 +492,11 @@ export default function TeacherDashboard({ activeTab, user, organization, update
                         setIsModalOpen(true);
                       }}
                       className="action-button-secondary"
-                      style={{ fontSize: '13px', padding: '8px 12px' }}
+                      style={s.btnFlex}
                     >
                       Edit Set
                     </button>
-                    <button 
+                    <button
                       onClick={() => {
                         if (window.confirm('Delete this word set and all its matching games?')) {
                           api.delete(`/sets/${set.id}`).then(() => {
@@ -497,7 +506,6 @@ export default function TeacherDashboard({ activeTab, user, organization, update
                         }
                       }}
                       className="action-button-danger"
-                      style={{ padding: '8px' }}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -509,50 +517,48 @@ export default function TeacherDashboard({ activeTab, user, organization, update
         </div>
       )}
 
-      {/* TAB 3: COURSES & TEXTBOOK LESSONS */}
       {activeTab === 'courses' && (
         <div>
-          <div className="page-header" style={{ marginBottom: '30px' }}>
+          <div className="page-header">
             <div>
               <h1 className="page-title">Course Lessons</h1>
               <p className="page-subtitle">Paste or write curriculum readings. Connect reading texts with active vocab games.</p>
             </div>
-            <button 
+            <button
               onClick={() => {
                 setCourseForm({ id: null, title: '', content: '', word_set_id: '' });
                 setExtractedWords([]);
                 setModalType('course');
                 setIsModalOpen(true);
-              }} 
+              }}
               className="action-button-primary"
             >
-              <Plus size={18} style={{ marginRight: '6px' }} />
+              <Plus size={18} style={s.iconGap} />
               Write Lesson
             </button>
           </div>
 
-          <div className="courses-list-stack" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={s.courseStack}>
             {courses.length === 0 ? (
-              <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+              <div className="card-item" style={s.emptyBox}>
                 No courses or textbook lessons written yet. Click "Write Lesson" to draft your first module.
               </div>
             ) : (
               courses.map((course) => (
-                <div key={course.id} className="card-item" style={{ padding: '25px', display: 'flex', justifySelf: 'stretch', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div key={course.id} className="card-item" style={s.courseRow}>
                   <div>
-                    <h3 style={{ fontSize: '18px', marginBottom: '6px' }}>{course.title}</h3>
-                    <div style={{ display: 'flex', gap: '15px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                    <h3 style={s.cardTitle}>{course.title}</h3>
+                    <div style={s.courseMeta}>
                       <span>Character length: {course.content.length} chars</span>
                       {course.word_set_title ? (
-                        <span style={{ color: 'var(--primary-color)', fontWeight: '600' }}>Linked Vocab Set: {course.word_set_title}</span>
+                        <span style={s.linkedTag}>Linked Vocab Set: {course.word_set_title}</span>
                       ) : (
-                        <span style={{ fontStyle: 'italic' }}>No game linked</span>
+                        <span>No game linked</span>
                       )}
                     </div>
                   </div>
-                  
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button 
+                  <div style={s.btnRow}>
+                    <button
                       onClick={() => {
                         setCourseForm(course);
                         setExtractedWords([]);
@@ -563,7 +569,7 @@ export default function TeacherDashboard({ activeTab, user, organization, update
                     >
                       Edit Lesson
                     </button>
-                    <button 
+                    <button
                       onClick={() => {
                         if (window.confirm('Delete this course lesson?')) {
                           api.delete(`/courses/${course.id}`).then(() => {
@@ -573,7 +579,6 @@ export default function TeacherDashboard({ activeTab, user, organization, update
                         }
                       }}
                       className="action-button-danger"
-                      style={{ padding: '10px' }}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -585,30 +590,29 @@ export default function TeacherDashboard({ activeTab, user, organization, update
         </div>
       )}
 
-      {/* TAB 4: STUDENTS MANAGEMENT */}
       {activeTab === 'students' && (
         <div>
-          <div className="page-header" style={{ marginBottom: '30px' }}>
+          <div className="page-header">
             <div>
               <h1 className="page-title">Manage Students</h1>
               <p className="page-subtitle">Register student logins and view their learning logs.</p>
             </div>
-            <button 
+            <button
               onClick={() => {
                 setStudentForm({ name: '', email: '', password: '' });
                 setModalType('student');
                 setIsModalOpen(true);
-              }} 
+              }}
               className="action-button-primary"
             >
-              <Plus size={18} style={{ marginRight: '6px' }} />
+              <Plus size={18} style={s.iconGap} />
               Add Student
             </button>
           </div>
 
-          <div className="card-item" style={{ padding: '25px' }}>
+          <div className="card-item" style={s.panel}>
             {students.length === 0 ? (
-              <p className="text-muted" style={{ padding: '30px 0', textAlign: 'center' }}>No students added yet. Click "Add Student" to provision student accounts.</p>
+              <p className="text-muted">No students added yet. Click "Add Student" to provision student accounts.</p>
             ) : (
               <table className="admin-table">
                 <thead>
@@ -616,21 +620,17 @@ export default function TeacherDashboard({ activeTab, user, organization, update
                     <th>Student Name</th>
                     <th>Email Login</th>
                     <th>Registered Date</th>
-                    <th style={{ textAlign: 'right' }}>Actions</th>
+                    <th className="text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {students.map((student) => (
-                    <tr key={student.id}>
-                      <td style={{ fontWeight: '600' }}>{student.name}</td>
+                    <tr key={student.id} className="table-hover-row">
+                      <td className="font-bold">{student.name}</td>
                       <td>{student.email}</td>
                       <td>{new Date(student.created_at).toLocaleDateString()}</td>
-                      <td style={{ textAlign: 'right' }}>
-                        <button 
-                          onClick={() => handleDeleteStudent(student.id)} 
-                          className="action-button-danger"
-                          style={{ padding: '8px' }}
-                        >
+                      <td className="text-right">
+                        <button onClick={() => handleDeleteStudent(student.id)} className="action-button-danger">
                           <Trash2 size={15} />
                         </button>
                       </td>
@@ -643,145 +643,61 @@ export default function TeacherDashboard({ activeTab, user, organization, update
         </div>
       )}
 
-      {/* TAB 5: CUSTOM BRANDING */}
       {activeTab === 'branding' && (
         <div>
-          <div className="page-header" style={{ marginBottom: '30px' }}>
+          <div className="page-header">
             <div>
               <h1 className="page-title">Custom Styling & Themes</h1>
               <p className="page-subtitle">White-label your portal. Adjust headers, accent colors, logo layouts, and dark modes.</p>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '40px' }}>
-            {/* Theme settings Form */}
-            <div className="card-item" style={{ padding: '30px' }}>
+          <div style={s.brandingGrid}>
+            <div className="card-item" style={s.panel}>
               <form onSubmit={handleSaveBranding}>
-                <div className="form-group" style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px' }}>Portal Name</label>
-                  <input 
-                    type="text" 
-                    value={brandForm.name} 
-                    onChange={(e) => setBrandForm({ ...brandForm, name: e.target.value })}
-                    className="form-input-control" 
-                    required 
-                  />
+                <div className="form-group" style={s.formMargin}>
+                  <label>Portal Name</label>
+                  <input type="text" value={brandForm.name} onChange={(e) => setBrandForm({ ...brandForm, name: e.target.value })} className="form-input-control" required />
                 </div>
-
-                <div className="form-group" style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px' }}>Organization Logo</label>
-                  <input 
-                    type="file" 
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    className="form-input-control" 
-                  />
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    Note: Files are resized and compressed client-side to keep load times rapid.
-                  </p>
+                <div className="form-group" style={s.formMargin}>
+                  <label>Organization Logo</label>
+                  <input type="file" accept="image/*" onChange={handleLogoUpload} className="form-input-control" />
+                  <p style={s.hintText}>Note: Files are resized and compressed client-side to keep load times rapid.</p>
                 </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                <div style={s.colorGrid}>
                   <div className="form-group">
-                    <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px' }}>Primary Accent Color</label>
-                    <input 
-                      type="color" 
-                      value={brandForm.theme_primary} 
-                      onChange={(e) => setBrandForm({ ...brandForm, theme_primary: e.target.value })}
-                      style={{ width: '100%', height: '40px', border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer' }}
-                    />
+                    <label>Primary Accent Color</label>
+                    <input type="color" value={brandForm.theme_primary} onChange={(e) => setBrandForm({ ...brandForm, theme_primary: e.target.value })} style={s.colorInput} />
                   </div>
                   <div className="form-group">
-                    <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px' }}>Secondary Color</label>
-                    <input 
-                      type="color" 
-                      value={brandForm.theme_secondary} 
-                      onChange={(e) => setBrandForm({ ...brandForm, theme_secondary: e.target.value })}
-                      style={{ width: '100%', height: '40px', border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer' }}
-                    />
+                    <label>Secondary Color</label>
+                    <input type="color" value={brandForm.theme_secondary} onChange={(e) => setBrandForm({ ...brandForm, theme_secondary: e.target.value })} style={s.colorInput} />
                   </div>
                 </div>
-
-                <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px' }}>
-                  <input 
-                    type="checkbox" 
-                    id="dark_mode_toggle"
-                    checked={brandForm.dark_mode} 
-                    onChange={(e) => setBrandForm({ ...brandForm, dark_mode: e.target.checked })}
-                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                  />
-                  <label htmlFor="dark_mode_toggle" style={{ fontWeight: '600', cursor: 'pointer' }}>Enable Dark Theme by Default</label>
+                <div style={s.checkboxRow}>
+                  <input type="checkbox" id="dark_mode_toggle" checked={brandForm.dark_mode} onChange={(e) => setBrandForm({ ...brandForm, dark_mode: e.target.checked })} />
+                  <label htmlFor="dark_mode_toggle">Enable Dark Theme by Default</label>
                 </div>
-
-                <button type="submit" className="action-button-primary" style={{ width: '100%' }}>
-                  Apply Custom Branding
-                </button>
+                <button type="submit" className="action-button-primary" style={s.fullBtn}>Apply Custom Branding</button>
               </form>
             </div>
 
-            {/* Live mockup layout preview panel */}
             <div>
-              <h3 style={{ marginBottom: '15px' }}>Live Brand Preview</h3>
-              <div 
-                style={{ 
-                  border: '1px solid var(--border-color)', 
-                  borderRadius: '12px', 
-                  overflow: 'hidden', 
-                  boxShadow: 'var(--shadow-lg)',
-                  background: brandForm.dark_mode ? '#0B0F19' : '#F8FAFC',
-                  color: brandForm.dark_mode ? '#F8FAFC' : '#0F172A',
-                  fontFamily: 'Plus Jakarta Sans, sans-serif'
-                }}
-              >
-                {/* Mockup Header */}
-                <div 
-                  style={{ 
-                    padding: '15px 20px', 
-                    background: brandForm.dark_mode ? '#151D30' : '#FFFFFF', 
-                    borderBottom: `2px solid ${brandForm.theme_primary}`,
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between' 
-                  }}
-                >
+              <h3 style={s.panelTitle}>Live Brand Preview</h3>
+              <div style={s.previewFrame}>
+                <div style={previewHeaderStyle}>
                   {brandForm.logo_data ? (
-                    <img src={brandForm.logo_data} alt="Custom Logo" style={{ maxHeight: '30px' }} />
+                    <img src={brandForm.logo_data} alt="Custom Logo" style={previewLogo} />
                   ) : (
-                    <span style={{ fontWeight: '800', fontSize: '18px', color: brandForm.theme_primary }}>{brandForm.name || 'EduMatch'}</span>
+                    <span style={previewBrandText}>{brandForm.name || 'EduMatch'}</span>
                   )}
-                  <span style={{ fontSize: '12px', opacity: 0.7 }}>Portal Preview</span>
+                  <span style={previewPreviewTag}>Portal Preview</span>
                 </div>
-
-                {/* Mockup Body */}
-                <div style={{ padding: '30px 20px', textAlign: 'center' }}>
-                  <p style={{ fontSize: '14px', marginBottom: '20px', opacity: 0.8 }}>Choose a vocabulary course to begin playing matching sessions.</p>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: '15px' }}>
-                    <div 
-                      style={{ 
-                        padding: '12px 20px', 
-                        background: brandForm.theme_primary, 
-                        color: '#FFFFFF', 
-                        borderRadius: '6px', 
-                        fontWeight: '600',
-                        fontSize: '13px',
-                        boxShadow: `0 4px 6px -1px ${brandForm.theme_primary}33`
-                      }}
-                    >
-                      Button Primary Accent
-                    </div>
-                    <div 
-                      style={{ 
-                        padding: '12px 20px', 
-                        background: brandForm.dark_mode ? '#242E42' : '#E2E8F0', 
-                        color: brandForm.dark_mode ? '#F8FAFC' : '#475569', 
-                        borderRadius: '6px', 
-                        fontWeight: '600',
-                        fontSize: '13px'
-                      }}
-                    >
-                      Secondary Button
-                    </div>
+                <div style={previewBodyStyle}>
+                  <p style={previewSubtitle}>Choose a vocabulary course to begin playing matching sessions.</p>
+                  <div style={previewBtnRow}>
+                    <div style={previewPrimaryBtn}>Button Primary Accent</div>
+                    <div style={previewSecondaryBtn}>Secondary Button</div>
                   </div>
                 </div>
               </div>
@@ -790,210 +706,130 @@ export default function TeacherDashboard({ activeTab, user, organization, update
         </div>
       )}
 
-      {/* TAB 6: PLAN & BILLING */}
       {activeTab === 'subscription' && (
         <div>
-          <div className="page-header" style={{ marginBottom: '30px' }}>
+          <div className="page-header">
             <div>
               <h1 className="page-title">Manage Subscriptions</h1>
               <p className="page-subtitle">Upgrade plan limits to support more vocabulary sets, students, and AI helper resources.</p>
             </div>
           </div>
 
-          {/* Current plan card */}
-          <div 
-            className="card-item highlight-revenue" 
-            style={{ 
-              padding: '30px', 
-              marginBottom: '35px', 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              borderLeft: '5px solid var(--primary-color)' 
-            }}
-          >
+          <div className="card-item highlight-revenue" style={s.planStatus}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <span className={`plan-badge ${organization.plan.toLowerCase()}`} style={{ fontSize: '14px', padding: '4px 10px' }}>
-                  {organization.plan} Plan
-                </span>
-                <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Current Organization tier</span>
+              <div style={s.planBadges}>
+                <span className={`plan-badge ${organization.plan.toLowerCase()}`}>{organization.plan} Plan</span>
+                <span style={s.metaCount}>Current Organization tier</span>
               </div>
-              <h3 style={{ fontSize: '24px', marginBottom: '15px' }}>{organization.name} Limits Usage</h3>
-              
-              <div style={{ display: 'flex', gap: '30px', fontSize: '14px' }}>
-                <div>
-                  <strong>Word Sets:</strong> {stats?.setsCount} / {organization.plan === 'Free' ? 3 : organization.plan === 'Pro' ? 50 : 'Unlimited'}
-                </div>
-                <div>
-                  <strong>Students:</strong> {stats?.studentsCount} / {organization.plan === 'Free' ? 5 : organization.plan === 'Pro' ? 100 : 'Unlimited'}
-                </div>
-                <div>
-                  <strong>AI Generations:</strong> {organization.ai_generations_count} / {organization.plan === 'Free' ? '3 total' : 'Unlimited'}
-                </div>
+              <h3 style={s.cardTitle}>{organization.name} Limits Usage</h3>
+              <div style={s.planUsage}>
+                <div><strong>Word Sets:</strong> {stats?.setsCount} / {organization.plan === 'Free' ? 3 : organization.plan === 'Pro' ? 50 : 'Unlimited'}</div>
+                <div><strong>Students:</strong> {stats?.studentsCount} / {organization.plan === 'Free' ? 5 : organization.plan === 'Pro' ? 100 : 'Unlimited'}</div>
+                <div><strong>AI Generations:</strong> {organization.ai_generations_count} / {organization.plan === 'Free' ? '3 total' : 'Unlimited'}</div>
               </div>
             </div>
             {organization.plan === 'Free' && (
-              <div style={{ background: 'var(--primary-glow)', padding: '20px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Crown size={24} style={{ color: 'var(--primary-color)' }} />
+              <div style={s.upgradeCallout}>
+                <Crown size={24} />
                 <div>
-                  <h4 style={{ color: 'var(--primary-color)' }}>Unlock unlimited limits</h4>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Pro starts at just $19 per month.</p>
+                  <h4>Unlock unlimited limits</h4>
+                  <p style={s.metaCount}>Pro starts at just $19 per month.</p>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Plan Comparison Cards */}
-          <div className="pricing-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px' }}>
-            
-            {/* Free Card */}
-            <div className={`card-item ${organization.plan === 'Free' ? 'active-tier-card' : ''}`} style={{ padding: '30px', display: 'flex', flexDirection: 'column', justifySelf: 'stretch' }}>
-              <h4 style={{ fontSize: '20px', marginBottom: '10px' }}>Free Sandbox</h4>
-              <div style={{ fontSize: '32px', fontWeight: '800', marginBottom: '20px' }}>$0<span style={{ fontSize: '14px', fontWeight: '400', color: 'var(--text-muted)' }}>/mo</span></div>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '14px', marginBottom: '30px', flex: 1 }}>
+          <div className="pricing-grid">
+            <div className={`card-item ${organization.plan === 'Free' ? 'active-tier-card' : ''}`} style={s.planCard}>
+              <h4 style={s.planTitle}>Free Sandbox</h4>
+              <div style={s.priceAmount}>$0<span style={s.pricePeriod}>/mo</span></div>
+              <ul style={s.featureList}>
                 <li>✓ Max 3 vocabulary sets</li>
                 <li>✓ Max 5 student profiles</li>
                 <li>✓ 3 total AI generations trial</li>
-                <li style={{ color: 'var(--text-muted)' }}>✗ Custom branding logo/colors</li>
-                <li style={{ color: 'var(--text-muted)' }}>✗ Text course links</li>
+                <li style={s.featureOff}>✗ Custom branding logo/colors</li>
+                <li style={s.featureOff}>✗ Text course links</li>
               </ul>
-              <button disabled className="action-button-secondary" style={{ width: '100%' }}>
+              <button disabled className="action-button-secondary" style={s.fullBtn}>
                 {organization.plan === 'Free' ? 'Current Plan' : 'Basic Tier'}
               </button>
             </div>
 
-            {/* Pro Card */}
-            <div className={`card-item ${organization.plan === 'Pro' ? 'active-tier-card' : ''}`} style={{ padding: '30px', borderTop: '4px solid var(--primary-color)', display: 'flex', flexDirection: 'column', justifySelf: 'stretch' }}>
-              <h4 style={{ fontSize: '20px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                Teacher Pro 
-                <span style={{ background: 'var(--primary-glow)', color: 'var(--primary-color)', fontSize: '10px', padding: '2px 6px', borderRadius: '4px' }}>Popular</span>
-              </h4>
-              <div style={{ fontSize: '32px', fontWeight: '800', marginBottom: '20px' }}>$19<span style={{ fontSize: '14px', fontWeight: '400', color: 'var(--text-muted)' }}>/mo</span></div>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '14px', marginBottom: '30px', flex: 1 }}>
+            <div className={`card-item ${organization.plan === 'Pro' ? 'active-tier-card' : ''}`} style={s.planCard}>
+              <h4 style={s.planTitle}>Teacher Pro <span style={s.popularTag}>Popular</span></h4>
+              <div style={s.priceAmount}>$19<span style={s.pricePeriod}>/mo</span></div>
+              <ul style={s.featureList}>
                 <li>✓ Max 50 vocabulary sets</li>
                 <li>✓ Max 100 student profiles</li>
                 <li>✓ Unlimited AI autofills</li>
                 <li>✓ Full custom branding customization</li>
                 <li>✓ Interactive HTML games for reading links</li>
               </ul>
-              <button 
+              <button
                 onClick={() => handleSubscriptionCheckout('Pro')}
-                className="action-button-primary" 
-                style={{ width: '100%' }}
+                className="action-button-primary"
+                style={s.fullBtn}
                 disabled={organization.plan === 'Pro' || organization.plan === 'School'}
               >
                 {organization.plan === 'Pro' ? 'Current Plan' : organization.plan === 'School' ? 'Upgrade Active' : 'Upgrade to Pro'}
               </button>
             </div>
 
-            {/* School Card */}
-            <div className={`card-item ${organization.plan === 'School' ? 'active-tier-card' : ''}`} style={{ padding: '30px', borderTop: '4px solid #10B981', display: 'flex', flexDirection: 'column', justifySelf: 'stretch' }}>
-              <h4 style={{ fontSize: '20px', marginBottom: '10px' }}>School / Agency</h4>
-              <div style={{ fontSize: '32px', fontWeight: '800', marginBottom: '20px' }}>$79<span style={{ fontSize: '14px', fontWeight: '400', color: 'var(--text-muted)' }}>/mo</span></div>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '14px', marginBottom: '30px', flex: 1 }}>
+            <div className={`card-item ${organization.plan === 'School' ? 'active-tier-card' : ''}`} style={s.planCard}>
+              <h4 style={s.planTitle}>School / Agency</h4>
+              <div style={s.priceAmount}>$79<span style={s.pricePeriod}>/mo</span></div>
+              <ul style={s.featureList}>
                 <li>✓ Unlimited vocabulary sets</li>
                 <li>✓ Unlimited student profiles</li>
                 <li>✓ Unlimited AI generation quota</li>
                 <li>✓ Full custom branding setup</li>
                 <li>✓ Priority support & integrations</li>
               </ul>
-              <button 
+              <button
                 onClick={() => handleSubscriptionCheckout('School')}
-                className="action-button-primary" 
-                style={{ width: '100%', backgroundColor: '#10B981', borderColor: '#10B981', boxShadow: 'none' }}
+                className="action-button-primary"
+                style={s.fullBtn}
                 disabled={organization.plan === 'School'}
               >
                 {organization.plan === 'School' ? 'Current Plan' : 'Upgrade to School'}
               </button>
             </div>
-
           </div>
         </div>
       )}
 
-      {/* POPUP MODALS */}
-
-      {/* MODAL 1: ADD STUDENT */}
       <Modal isOpen={isModalOpen && modalType === 'student'} onClose={() => setIsModalOpen(false)} title="Create Student User Account">
         <form onSubmit={handleAddStudent} className="form-layout">
-          <div className="form-group" style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Student Name</label>
-            <input 
-              type="text" 
-              placeholder="e.g. Alice Cooper"
-              value={studentForm.name} 
-              onChange={(e) => setStudentForm({ ...studentForm, name: e.target.value })}
-              className="form-input-control" 
-              required 
-            />
+          <div className="form-group">
+            <label>Student Name</label>
+            <input type="text" placeholder="e.g. Alice Cooper" value={studentForm.name} onChange={(e) => setStudentForm({ ...studentForm, name: e.target.value })} className="form-input-control" required />
           </div>
-          <div className="form-group" style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Login Email</label>
-            <input 
-              type="email" 
-              placeholder="e.g. alice@school.com"
-              value={studentForm.email} 
-              onChange={(e) => setStudentForm({ ...studentForm, email: e.target.value })}
-              className="form-input-control" 
-              required 
-            />
+          <div className="form-group">
+            <label>Login Email</label>
+            <input type="email" placeholder="e.g. alice@school.com" value={studentForm.email} onChange={(e) => setStudentForm({ ...studentForm, email: e.target.value })} className="form-input-control" required />
           </div>
-          <div className="form-group" style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Login Password</label>
-            <input 
-              type="password" 
-              placeholder="Min 6 chars"
-              value={studentForm.password} 
-              onChange={(e) => setStudentForm({ ...studentForm, password: e.target.value })}
-              className="form-input-control" 
-              required 
-            />
+          <div className="form-group">
+            <label>Login Password</label>
+            <input type="password" placeholder="Min 6 chars" value={studentForm.password} onChange={(e) => setStudentForm({ ...studentForm, password: e.target.value })} className="form-input-control" required />
           </div>
-          <button type="submit" className="action-button-primary" style={{ width: '100%' }}>
-            Add Student Account
-          </button>
+          <button type="submit" className="action-button-primary" style={s.fullBtn}>Add Student Account</button>
         </form>
       </Modal>
 
-      {/* MODAL 2: WORD SET EDITOR / CREATOR */}
-      <Modal 
-        isOpen={isModalOpen && modalType === 'set'} 
-        onClose={() => setIsModalOpen(false)} 
-        title={setForm.id ? "Edit Vocabulary Set" : "Create Vocabulary Word Set"}
-      >
+      <Modal isOpen={isModalOpen && modalType === 'set'} onClose={() => setIsModalOpen(false)} title={setForm.id ? 'Edit Vocabulary Set' : 'Create Vocabulary Word Set'}>
         <form onSubmit={handleSaveWordSet} className="form-layout">
-          <div className="form-group" style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Set Title</label>
-            <input 
-              type="text" 
-              value={setForm.title} 
-              onChange={(e) => setSetForm({ ...setForm, title: e.target.value })}
-              className="form-input-control" 
-              placeholder="e.g. Spanish Food Vocabulary"
-              required 
-            />
+          <div className="form-group">
+            <label>Set Title</label>
+            <input type="text" value={setForm.title} onChange={(e) => setSetForm({ ...setForm, title: e.target.value })} className="form-input-control" placeholder="e.g. Spanish Food Vocabulary" required />
           </div>
-
-          <div className="form-group" style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Description</label>
-            <textarea 
-              value={setForm.description} 
-              onChange={(e) => setSetForm({ ...setForm, description: e.target.value })}
-              className="form-input-control" 
-              placeholder="Brief summary of words..."
-              rows={2}
-            />
+          <div className="form-group">
+            <label>Description</label>
+            <textarea value={setForm.description} onChange={(e) => setSetForm({ ...setForm, description: e.target.value })} className="form-input-control" placeholder="Brief summary of words..." rows={2} />
           </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+          <div style={s.langSelectRow}>
             <div className="form-group">
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Source Lang (Student reads)</label>
-              <select 
-                value={setForm.source_lang} 
-                onChange={(e) => setSetForm({ ...setForm, source_lang: e.target.value })}
-                className="form-input-control"
-              >
+              <label>Source Lang (Student reads)</label>
+              <select value={setForm.source_lang} onChange={(e) => setSetForm({ ...setForm, source_lang: e.target.value })} className="form-input-control">
                 <option value="en">English (en)</option>
                 <option value="es">Spanish (es)</option>
                 <option value="ar">Arabic (ar)</option>
@@ -1001,12 +837,8 @@ export default function TeacherDashboard({ activeTab, user, organization, update
               </select>
             </div>
             <div className="form-group">
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Target Lang (Student learns)</label>
-              <select 
-                value={setForm.target_lang} 
-                onChange={(e) => setSetForm({ ...setForm, target_lang: e.target.value })}
-                className="form-input-control"
-              >
+              <label>Target Lang (Student learns)</label>
+              <select value={setForm.target_lang} onChange={(e) => setSetForm({ ...setForm, target_lang: e.target.value })} className="form-input-control">
                 <option value="es">Spanish (es)</option>
                 <option value="ar">Arabic (ar)</option>
                 <option value="en">English (en)</option>
@@ -1015,82 +847,34 @@ export default function TeacherDashboard({ activeTab, user, organization, update
             </div>
           </div>
 
-          {/* AI Autofill Subsection */}
-          <div style={{ background: 'var(--bg-main)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', marginBottom: '8px', color: 'var(--primary-color)' }}>
+          <div style={s.aiBox}>
+            <div style={s.aiHeader}>
               <Sparkles size={16} />
               <span>AI Vocabulary Autofill Helper</span>
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input 
-                type="text" 
-                placeholder="Topic (e.g. airport, clothing, animals)"
-                value={aiTopic}
-                onChange={(e) => setAiTopic(e.target.value)}
-                className="form-input-control"
-                style={{ flex: 1, height: '36px' }}
-              />
-              <button 
-                type="button" 
-                onClick={handleAiAutofill} 
-                className="action-button-primary"
-                style={{ padding: '8px 12px', fontSize: '12px' }}
-                disabled={aiLoading || !aiTopic}
-              >
+            <div style={s.aiInputRow}>
+              <input type="text" placeholder="Topic (e.g. airport, clothing, animals)" value={aiTopic} onChange={(e) => setAiTopic(e.target.value)} className="form-input-control" style={s.btnFlex} />
+              <button type="button" onClick={handleAiAutofill} className="action-button-primary" disabled={aiLoading || !aiTopic}>
                 {aiLoading ? 'Autofilling...' : 'Autofill'}
               </button>
             </div>
+            {isFreePlan && (
+              <p style={s.aiTrialNote}>✨ {aiTrialsLeft} of 3 free AI generations remaining on the Free plan.</p>
+            )}
           </div>
 
-          {/* Words Rows List */}
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <h4 style={{ fontSize: '14px' }}>Vocabulary Terms List</h4>
-              <button 
-                type="button" 
-                onClick={handleAddWordRow} 
-                className="action-button-secondary"
-                style={{ padding: '4px 10px', fontSize: '12px' }}
-              >
-                + Add Term Row
-              </button>
+          <div>
+            <div style={s.wordsHeader}>
+              <h4>Vocabulary Terms List</h4>
+              <button type="button" onClick={handleAddWordRow} className="action-button-secondary">+ Add Term Row</button>
             </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '220px', overflowY: 'auto', paddingRight: '5px' }}>
+            <div style={s.wordsList}>
               {setForm.words.map((word, idx) => (
-                <div key={idx} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <input 
-                    type="text" 
-                    placeholder="Term (e.g. el agua)" 
-                    value={word.term} 
-                    onChange={(e) => handleWordFieldChange(idx, 'term', e.target.value)}
-                    className="form-input-control"
-                    style={{ flex: 1.2, height: '36px' }}
-                    required
-                  />
-                  <input 
-                    type="text" 
-                    placeholder="Translation (water)" 
-                    value={word.translation} 
-                    onChange={(e) => handleWordFieldChange(idx, 'translation', e.target.value)}
-                    className="form-input-control"
-                    style={{ flex: 1.2, height: '36px' }}
-                    required
-                  />
-                  <input 
-                    type="text" 
-                    placeholder="Hint (Fluid)" 
-                    value={word.hint} 
-                    onChange={(e) => handleWordFieldChange(idx, 'hint', e.target.value)}
-                    className="form-input-control"
-                    style={{ flex: 1.5, height: '36px' }}
-                  />
-                  <button 
-                    type="button" 
-                    onClick={() => handleRemoveWordRow(idx)}
-                    className="action-button-danger"
-                    style={{ padding: '8px' }}
-                  >
+                <div key={idx} style={s.wordRow}>
+                  <input type="text" placeholder="Term (e.g. el agua)" value={word.term} onChange={(e) => handleWordFieldChange(idx, 'term', e.target.value)} className="form-input-control" required />
+                  <input type="text" placeholder="Translation (water)" value={word.translation} onChange={(e) => handleWordFieldChange(idx, 'translation', e.target.value)} className="form-input-control" required />
+                  <input type="text" placeholder="Hint (Fluid)" value={word.hint} onChange={(e) => handleWordFieldChange(idx, 'hint', e.target.value)} className="form-input-control" />
+                  <button type="button" onClick={() => handleRemoveWordRow(idx)} className="action-button-danger">
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -1098,68 +882,43 @@ export default function TeacherDashboard({ activeTab, user, organization, update
             </div>
           </div>
 
-          <button type="submit" className="action-button-primary" style={{ width: '100%' }}>
+          <button type="submit" className="action-button-primary" style={s.fullBtn}>
             {setForm.id ? 'Save Changes' : 'Create Vocabulary Set'}
           </button>
         </form>
       </Modal>
 
-      {/* MODAL 3: COURSE LESSON EDITOR / CREATOR */}
-      <Modal 
-        isOpen={isModalOpen && modalType === 'course'} 
-        onClose={() => setIsModalOpen(false)} 
-        title={courseForm.id ? "Edit Course Lesson" : "Write Course Lesson"}
-      >
+      <Modal isOpen={isModalOpen && modalType === 'course'} onClose={() => setIsModalOpen(false)} title={courseForm.id ? 'Edit Course Lesson' : 'Write Course Lesson'}>
         <form onSubmit={handleSaveCourse} className="form-layout">
-          <div className="form-group" style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Lesson Title</label>
-            <input 
-              type="text" 
-              value={courseForm.title} 
-              onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
-              className="form-input-control" 
-              placeholder="e.g. Lesson 1: Eating in Madrid"
-              required 
-            />
+          <div className="form-group">
+            <label>Lesson Title</label>
+            <input type="text" value={courseForm.title} onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })} className="form-input-control" placeholder="e.g. Lesson 1: Eating in Madrid" required />
+          </div>
+          <div className="form-group">
+            <label>Lesson Content</label>
+            <textarea value={courseForm.content} onChange={(e) => setCourseForm({ ...courseForm, content: e.target.value })} className="form-input-control" placeholder="Write the full reading text content here. Tip: use foreign words in quotes followed by translation like: 'el queso' (cheese) to enable automatic vocabulary extraction!" rows={8} required />
           </div>
 
-          <div className="form-group" style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Lesson Content</label>
-            <textarea 
-              value={courseForm.content} 
-              onChange={(e) => setCourseForm({ ...courseForm, content: e.target.value })}
-              className="form-input-control" 
-              placeholder="Write the full reading text content here. Tip: teachers can use foreign words in quotes followed by translation like: 'el queso' (cheese) to enable automatic vocabulary extraction!"
-              rows={8}
-              required
-            />
-          </div>
-
-          {/* AI Extraction Subsection */}
-          <div style={{ background: 'var(--bg-main)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', justifySelf: 'stretch', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: 'var(--primary-color)' }}>
+          <div style={s.aiBox}>
+            <div style={s.aiHeaderBetween}>
+              <div style={s.aiTitle}>
                 <Sparkles size={16} />
                 <span>AI Vocabulary Extraction Helper</span>
               </div>
-              <button 
-                type="button" 
-                onClick={handleAiExtract} 
-                className="action-button-secondary"
-                style={{ padding: '6px 12px', fontSize: '12px' }}
-                disabled={extractLoading || !courseForm.content}
-              >
+              <button type="button" onClick={handleAiExtract} className="action-button-secondary" disabled={extractLoading || !courseForm.content}>
                 {extractLoading ? 'Extracting...' : 'Extract Words'}
               </button>
             </div>
-            
+            {isFreePlan && (
+              <p style={s.aiTrialNote}>✨ {aiTrialsLeft} of 3 free AI generations remaining on the Free plan.</p>
+            )}
             {extractedWords.length > 0 && (
-              <div style={{ marginTop: '12px' }}>
-                <p style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px' }}>Extracted Words (will automatically create a linked matching game):</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '120px', overflowY: 'auto' }}>
+              <div style={s.extractedBox}>
+                <p className="text-muted" style={s.cardDesc}>Extracted Words (will automatically create a linked matching game):</p>
+                <div>
                   {extractedWords.map((w, idx) => (
-                    <div key={idx} style={{ display: 'flex', gap: '5px', fontSize: '11px', background: 'var(--bg-card)', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-                      <strong>{w.term}</strong> <span>→ {w.translation}</span> <span style={{ color: 'var(--text-muted)' }}>({w.hint})</span>
+                    <div key={idx} style={s.extractedChip}>
+                      <strong>{w.term}</strong> <span>→ {w.translation}</span> <span className="text-muted">({w.hint})</span>
                     </div>
                   ))}
                 </div>
@@ -1167,25 +926,18 @@ export default function TeacherDashboard({ activeTab, user, organization, update
             )}
           </div>
 
-          <div className="form-group" style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Link an Existing Vocab Set (Optional)</label>
-            <select 
-              value={courseForm.word_set_id} 
-              onChange={(e) => setCourseForm({ ...courseForm, word_set_id: e.target.value })}
-              className="form-input-control"
-              disabled={extractedWords.length > 0}
-            >
+          <div className="form-group">
+            <label>Link an Existing Vocab Set (Optional)</label>
+            <select value={courseForm.word_set_id} onChange={(e) => setCourseForm({ ...courseForm, word_set_id: e.target.value })} className="form-input-control" disabled={extractedWords.length > 0}>
               <option value="">-- No linked word set --</option>
-              {sets.map(s => <option key={s.id} value={s.id}>{s.title} ({s.word_count} words)</option>)}
+              {sets.map((sx) => <option key={sx.id} value={sx.id}>{sx.title} ({sx.word_count} words)</option>)}
             </select>
             {extractedWords.length > 0 && (
-              <p style={{ fontSize: '11px', color: 'var(--color-success)', marginTop: '4px' }}>
-                ✓ An automatically generated set will be linked.
-              </p>
+              <p style={s.linkedTag}>✓ An automatically generated set will be linked.</p>
             )}
           </div>
 
-          <button type="submit" className="action-button-primary" style={{ width: '100%' }}>
+          <button type="submit" className="action-button-primary" style={s.fullBtn}>
             {courseForm.id ? 'Save Lesson' : 'Publish Lesson'}
           </button>
         </form>
