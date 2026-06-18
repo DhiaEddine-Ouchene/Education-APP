@@ -202,17 +202,21 @@ export default function TeacherDashboard({ activeTab, user, organization, update
   };
 
   const handleAiAutofill = async () => {
-    if (!aiTopic) return;
+    const topicContext = [aiTopic, setForm.title, setForm.description].filter(Boolean).join(' - ');
+    if (!topicContext) {
+      setError('Add a set title (or type a topic) so the AI knows what vocabulary to generate.');
+      return;
+    }
     setAiLoading(true);
     setError('');
     try {
       const res = await api.post('/ai/autofill', {
-        topic: aiTopic,
+        topic: topicContext,
         source_lang: setForm.source_lang,
         target_lang: setForm.target_lang
       });
-      setSetForm({ ...setForm, words: [...setForm.words, ...res.words] });
-      setSuccess(`Generated ${res.words.length} vocabulary words!`);
+      setSetForm((prev) => ({ ...prev, words: [...prev.words, ...res.words] }));
+      setSuccess(`Generated ${res.words.length} vocabulary words from your set title & description!`);
       setAiTopic('');
     } catch (e) {
       setError(e.message || 'AI Autofill failed.');
@@ -881,9 +885,10 @@ export default function TeacherDashboard({ activeTab, user, organization, update
               <Sparkles size={16} />
               <span>AI Vocabulary Autofill Helper</span>
             </div>
+            <p style={s.aiTrialNote}>Generates vocabulary from this set's title and description. Add an optional extra topic below to refine it.</p>
             <div style={s.aiInputRow}>
-              <input type="text" placeholder="Topic (e.g. airport, clothing, animals)" value={aiTopic} onChange={(e) => setAiTopic(e.target.value)} className="form-input-control" style={s.wordInput} />
-              <button type="button" onClick={handleAiAutofill} className="action-button-primary" disabled={aiLoading || !aiTopic}>
+              <input type="text" placeholder="Optional extra topic (e.g. airport, clothing) or leave blank" value={aiTopic} onChange={(e) => setAiTopic(e.target.value)} className="form-input-control" style={s.wordInput} />
+              <button type="button" onClick={handleAiAutofill} className="action-button-primary" disabled={aiLoading || (!aiTopic && !setForm.title)}>
                 {aiLoading ? 'Autofilling...' : 'Autofill'}
               </button>
             </div>

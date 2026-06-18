@@ -186,7 +186,7 @@ async function extractFromText(text, sourceLang = 'en', targetLang = 'es') {
   if (OPENAI_API_KEY) {
     try {
       const prompt =
-        'You are an educational AI helper. Scan the following lesson text and extract up to 8 key vocabulary words/phrases. For each, give "term" in the target language (' +
+        'You are an educational AI helper. Scan the following lesson text and extract up to 8 of the most important and most frequently repeated vocabulary words/phrases. For each, give "term" in the target language (' +
         targetLang +
         '), "translation" in the source language (' +
         sourceLang +
@@ -214,19 +214,23 @@ async function extractFromText(text, sourceLang = 'en', targetLang = 'es') {
   }
   if (foundWords.length > 0) return foundWords;
 
-  // 2) Otherwise pick salient words from the lesson and translate them.
+  // 2) Otherwise rank words by how often they repeat (most important first).
   const tokens = (text.toLowerCase().match(/[a-z\u00c0-\u024f]{4,}/g) || []);
-  const unique = [];
+  const freq = {};
   for (const tk of tokens) {
-    if (!STOP_WORDS.has(tk) && unique.indexOf(tk) === -1) unique.push(tk);
-    if (unique.length >= 8) break;
+    if (STOP_WORDS.has(tk)) continue;
+    freq[tk] = (freq[tk] || 0) + 1;
   }
+  const ranked = Object.keys(freq)
+    .sort((a, b) => (freq[b] !== freq[a] ? freq[b] - freq[a] : b.length - a.length))
+    .slice(0, 8);
 
-  if (unique.length > 0) {
+  if (ranked.length > 0) {
     const out = [];
-    for (const w of unique) {
+    for (const w of ranked) {
       const term = await translateText(w, sourceLang, targetLang);
-      out.push({ term: term, translation: w, hint: 'Key word from the lesson: ' + w });
+      const times = freq[w] > 1 ? ' (repeated ' + freq[w] + ' times)' : '';
+      out.push({ term: term, translation: w, hint: 'Key word from the lesson' + times });
     }
     return out;
   }
