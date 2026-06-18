@@ -9,40 +9,54 @@ const LOCAL_VOCAB_DB = {
     { term: 'el pescado', translation: 'fish', hint: 'Seafood animal with gills' },
     { term: 'la sopa', translation: 'soup', hint: 'Liquid hot food dish' },
     { term: 'el postre', translation: 'dessert', hint: 'Sweet course eaten at the end of a meal' },
-    { term: 'la ensalada', translation: 'salad', hint: 'Dish of mixed cold vegetables' }
+    { term: 'la ensalada', translation: 'salad', hint: 'Dish of mixed cold vegetables' },
   ],
   travel: [
     { term: 'la maleta', translation: 'suitcase', hint: 'Case for carrying clothes when travelling' },
-    { term: 'el avión', translation: 'airplane', hint: 'Flying vehicle with wings' },
+    { term: 'el avion', translation: 'airplane', hint: 'Flying vehicle with wings' },
     { term: 'el tren', translation: 'train', hint: 'Connected railway carriages' },
     { term: 'la playa', translation: 'beach', hint: 'Sandy shore by the ocean' },
     { term: 'el mapa', translation: 'map', hint: 'Visual representation of an area' },
-    { term: 'la dirección', translation: 'address/direction', hint: 'Where something is located' }
+    { term: 'la direccion', translation: 'address/direction', hint: 'Where something is located' },
   ],
   greetings: [
     { term: 'hola', translation: 'hello', hint: 'Common friendly greeting' },
-    { term: 'adiós', translation: 'goodbye', hint: 'Parting phrase' },
+    { term: 'adios', translation: 'goodbye', hint: 'Parting phrase' },
     { term: 'por favor', translation: 'please', hint: 'Polite request term' },
     { term: 'de nada', translation: 'you are welcome', hint: 'Response to thank you' },
-    { term: 'buenos días', translation: 'good morning', hint: 'Greeting in the morning' },
-    { term: 'buenas noches', translation: 'good night', hint: 'Greeting in the evening' }
+    { term: 'buenos dias', translation: 'good morning', hint: 'Greeting in the morning' },
+    { term: 'buenas noches', translation: 'good night', hint: 'Greeting in the evening' },
   ],
   animals: [
-    { term: 'el perro', translation: 'dog', hint: 'Man\'s best friend' },
-    { term: 'el gato', translation: 'cat', hint: 'Small furry whiskers pet' },
+    { term: 'el perro', translation: 'dog', hint: 'Best friend of humans' },
+    { term: 'el gato', translation: 'cat', hint: 'Small furry whiskered pet' },
     { term: 'el caballo', translation: 'horse', hint: 'Large animal you can ride' },
-    { term: 'el pájaro', translation: 'bird', hint: 'Feathered flying animal' },
-    { term: 'el pez', translation: 'fish (swimming)', hint: 'Water-dwelling scaly creature' }
-  ]
+    { term: 'el pajaro', translation: 'bird', hint: 'Feathered flying animal' },
+    { term: 'el pez', translation: 'fish (swimming)', hint: 'Water-dwelling scaly creature' },
+  ],
 };
 
+const STOP_WORDS = new Set([
+  'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'any', 'can', 'had', 'her', 'was', 'one', 'our',
+  'out', 'day', 'get', 'has', 'him', 'his', 'how', 'man', 'new', 'now', 'old', 'see', 'two', 'way', 'who',
+  'boy', 'did', 'its', 'let', 'put', 'say', 'she', 'too', 'use', 'with', 'this', 'that', 'they', 'from',
+  'have', 'were', 'your', 'what', 'when', 'will', 'there', 'their', 'about', 'would', 'which', 'these',
+  'such', 'then', 'than', 'them', 'into', 'some', 'more', 'most', 'over', 'also', 'just', 'like', 'very',
+]);
+
 /**
- * Dynamic Translation Helper using Google Translate free gtx endpoint.
+ * Dynamic translation helper using the free Google Translate gtx endpoint.
  */
 async function translateText(text, fromLang, toLang) {
-  if (fromLang === toLang) return text;
+  if (!text || fromLang === toLang) return text;
   try {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${fromLang}&tl=${toLang}&dt=t&q=${encodeURIComponent(text)}`;
+    const url =
+      'https://translate.googleapis.com/translate_a/single?client=gtx&sl=' +
+      encodeURIComponent(fromLang) +
+      '&tl=' +
+      encodeURIComponent(toLang) +
+      '&dt=t&q=' +
+      encodeURIComponent(text);
     const res = await fetch(url);
     if (res.ok) {
       const json = await res.json();
@@ -51,9 +65,34 @@ async function translateText(text, fromLang, toLang) {
       }
     }
   } catch (e) {
-    console.error(`Dynamic translation failed for "${text}":`, e.message);
+    console.error('Dynamic translation failed for "' + text + '":', e.message);
   }
   return text;
+}
+
+async function callOpenAi(systemPrompt, temperature) {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + OPENAI_API_KEY,
+    },
+    body: JSON.stringify({
+      model: 'gpt-3.5-turbo',
+      messages: [{ role: 'system', content: systemPrompt }],
+      temperature,
+    }),
+  });
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error('OpenAI error: ' + errText);
+  }
+  const data = await response.json();
+  let content = data.choices[0].message.content.trim();
+  if (content.startsWith('```json')) content = content.slice(7);
+  if (content.startsWith('```')) content = content.slice(3);
+  if (content.endsWith('```')) content = content.slice(0, -3);
+  return JSON.parse(content.trim());
 }
 
 /**
@@ -63,105 +102,57 @@ async function translateText(text, fromLang, toLang) {
 async function generateFromTopic(topic, sourceLang = 'en', targetLang = 'es') {
   if (OPENAI_API_KEY) {
     try {
-      console.log('Calling OpenAI API for topic autofill...');
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: `You are an educational AI helper. Generate a vocabulary list of exactly 6 words/phrases for the topic "${topic}".
-              Source language (students read this): ${sourceLang}
-              Target language (students learn this): ${targetLang}
-              
-              Format the response as a JSON array of objects, each having:
-              - "term": the word/phrase in the target language (e.g. "el queso")
-              - "translation": the translation in the source language (e.g. "cheese")
-              - "hint": a helpful, descriptive clue in the source language.
-              
-              Return ONLY the raw JSON array. No explanations, no markdown formatting.`
-            }
-          ],
-          temperature: 0.7
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        let content = data.choices[0].message.content.trim();
-        // Strip markdown backticks if OpenAI outputs them
-        if (content.startsWith('```json')) content = content.slice(7);
-        if (content.startsWith('```')) content = content.slice(3);
-        if (content.endsWith('```')) content = content.slice(0, -3);
-        
-        return JSON.parse(content.trim());
-      } else {
-        const errText = await response.text();
-        console.error('OpenAI Error response:', errText);
-        // Fall through to local generation on error
-      }
+      const prompt =
+        'You are an educational AI helper. Generate a vocabulary list of exactly 6 words/phrases for the topic "' +
+        topic +
+        '". Source language (students read this): ' +
+        sourceLang +
+        '. Target language (students learn this): ' +
+        targetLang +
+        '. Format the response as a JSON array of objects, each having: "term" (the word/phrase in the target language), "translation" (the translation in the source language), and "hint" (a helpful descriptive clue in the source language). Return ONLY the raw JSON array. No explanations, no markdown.';
+      return await callOpenAi(prompt, 0.7);
     } catch (e) {
-      console.error('OpenAI API call failed, falling back to local database:', e);
+      console.error('OpenAI topic autofill failed, using offline generator:', e.message);
     }
   }
 
-  // Smart Offline Fallback
   console.log('Running smart offline topic generation...');
   const cleanTopic = topic.toLowerCase().trim();
-  
-  // Try direct lookup of curated local DB first
+
+  // Curated local DB first.
   for (const key of Object.keys(LOCAL_VOCAB_DB)) {
     if (cleanTopic.includes(key) || key.includes(cleanTopic)) {
-      console.log(`Matched curated local database key: "${key}". Translating dynamically...`);
       const curatedWords = LOCAL_VOCAB_DB[key];
       const translatedList = [];
       for (const item of curatedWords) {
-        // Translate term from Spanish ('es') to target language if target is not 'es'
         const term = targetLang === 'es' ? item.term : await translateText(item.term, 'es', targetLang);
-        // Translate translation from English ('en') to source language if source is not 'en'
         const translation = sourceLang === 'en' ? item.translation : await translateText(item.translation, 'en', sourceLang);
-        // Translate hint from English ('en') to source language if source is not 'en'
         const hint = sourceLang === 'en' ? item.hint : await translateText(item.hint, 'en', sourceLang);
-        
-        translatedList.push({
-          term: term.toLowerCase(),
-          translation: translation.toLowerCase(),
-          hint: hint
-        });
+        translatedList.push({ term: term, translation: translation, hint: hint });
       }
       return translatedList;
     }
   }
 
-  // Extensive topic fallback lists
   const TOPIC_WORDS = {
-    food: ['bread', 'apple', 'cheese', 'water', 'milk', 'tomato', 'meat', 'fish', 'soup', 'dessert', 'salad', 'chicken', 'rice', 'fruit', 'vegetable'],
-    travel: ['airport', 'hotel', 'passport', 'ticket', 'airplane', 'train', 'beach', 'map', 'suitcase', 'station', 'taxi', 'car', 'luggage'],
-    greetings: ['hello', 'goodbye', 'please', 'thank you', 'you are welcome', 'good morning', 'good night', 'how are you', 'nice to meet you', 'excuse me'],
-    animals: ['dog', 'cat', 'horse', 'bird', 'fish', 'lion', 'elephant', 'tiger', 'monkey', 'rabbit', 'bear', 'mouse', 'sheep', 'cow', 'duck'],
-    colors: ['red', 'blue', 'green', 'yellow', 'black', 'white', 'orange', 'purple', 'pink', 'brown', 'gray'],
-    family: ['father', 'mother', 'brother', 'sister', 'grandfather', 'grandmother', 'son', 'daughter', 'uncle', 'aunt', 'cousin', 'husband', 'wife'],
-    school: ['teacher', 'student', 'book', 'pencil', 'pen', 'desk', 'classroom', 'school', 'paper', 'notebook', 'computer', 'exam', 'lesson'],
-    weather: ['sun', 'rain', 'snow', 'wind', 'cloud', 'hot', 'cold', 'warm', 'storm', 'weather', 'summer', 'winter', 'spring', 'autumn'],
-    clothing: ['shirt', 'pants', 'shoes', 'socks', 'jacket', 'hat', 'dress', 'skirt', 'coat', 'gloves', 'boots'],
-    body: ['head', 'face', 'eye', 'ear', 'nose', 'mouth', 'hair', 'arm', 'hand', 'leg', 'foot', 'heart', 'finger', 'tooth'],
-    home: ['house', 'room', 'bed', 'chair', 'table', 'door', 'window', 'kitchen', 'bathroom', 'garden', 'key', 'clock'],
-    jobs: ['doctor', 'nurse', 'teacher', 'engineer', 'police officer', 'firefighter', 'chef', 'artist', 'driver', 'pilot', 'writer', 'farmer'],
-    nature: ['tree', 'flower', 'grass', 'river', 'lake', 'mountain', 'forest', 'sky', 'star', 'moon', 'sea', 'stone'],
-    sports: ['soccer', 'basketball', 'tennis', 'baseball', 'running', 'swimming', 'jump', 'ball', 'game', 'play', 'team'],
-    feelings: ['happy', 'sad', 'angry', 'scared', 'tired', 'excited', 'bored', 'surprised', 'love', 'fear', 'joy'],
-    music: ['music', 'song', 'sing', 'dance', 'guitar', 'piano', 'violin', 'drum', 'melody', 'rhythm', 'concert', 'band'],
-    time: ['time', 'hour', 'minute', 'second', 'day', 'week', 'month', 'year', 'morning', 'afternoon', 'evening', 'night', 'today', 'yesterday', 'tomorrow'],
-    numbers: ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'hundred', 'thousand'],
-    shopping: ['store', 'shop', 'buy', 'sell', 'price', 'money', 'cash', 'credit card', 'market', 'cheap', 'expensive', 'receipt']
+    food: ['bread', 'apple', 'cheese', 'water', 'milk', 'tomato'],
+    travel: ['airport', 'hotel', 'passport', 'ticket', 'airplane', 'train'],
+    greetings: ['hello', 'goodbye', 'please', 'thank you', 'good morning', 'good night'],
+    animals: ['dog', 'cat', 'horse', 'bird', 'fish', 'lion'],
+    colors: ['red', 'blue', 'green', 'yellow', 'black', 'white'],
+    family: ['father', 'mother', 'brother', 'sister', 'son', 'daughter'],
+    school: ['teacher', 'student', 'book', 'pencil', 'desk', 'classroom'],
+    weather: ['sun', 'rain', 'snow', 'wind', 'cloud', 'storm'],
+    clothing: ['shirt', 'pants', 'shoes', 'jacket', 'hat', 'dress'],
+    body: ['head', 'face', 'eye', 'hand', 'leg', 'foot'],
+    home: ['house', 'room', 'bed', 'chair', 'table', 'door'],
+    jobs: ['doctor', 'nurse', 'teacher', 'engineer', 'chef', 'driver'],
+    nature: ['tree', 'flower', 'river', 'mountain', 'sky', 'sea'],
+    sports: ['soccer', 'basketball', 'tennis', 'running', 'swimming', 'team'],
+    feelings: ['happy', 'sad', 'angry', 'tired', 'excited', 'love'],
+    numbers: ['one', 'two', 'three', 'four', 'five', 'six'],
   };
 
-  // Find matching key in topic lists
   let matchedKey = null;
   for (const key of Object.keys(TOPIC_WORDS)) {
     if (cleanTopic.includes(key) || key.includes(cleanTopic)) {
@@ -170,38 +161,20 @@ async function generateFromTopic(topic, sourceLang = 'en', targetLang = 'es') {
     }
   }
 
-  // Get raw words
-  let rawWords = [];
-  if (matchedKey) {
-    rawWords = TOPIC_WORDS[matchedKey].slice(0, 6);
-  } else {
-    // If not matching any topic, use the topic name as the first term, and append some general vocabulary words
-    rawWords = [cleanTopic, 'hello', 'friend', 'school', 'happy', 'family'].slice(0, 6);
-  }
+  const rawWords = matchedKey
+    ? TOPIC_WORDS[matchedKey].slice(0, 6)
+    : [cleanTopic, 'hello', 'friend', 'school', 'happy', 'family'].slice(0, 6);
 
-  // Translate dynamically
   const result = [];
   for (const w of rawWords) {
     try {
       const term = await translateText(w, 'en', targetLang);
-      const translation = await translateText(w, 'en', sourceLang);
-      const rawHint = `A term related to ${topic}: ${w}`;
-      const hint = await translateText(rawHint, 'en', sourceLang);
-      
-      result.push({
-        term: term.toLowerCase(),
-        translation: translation.toLowerCase(),
-        hint: hint
-      });
+      const translation = sourceLang === 'en' ? w : await translateText(w, 'en', sourceLang);
+      result.push({ term: term, translation: translation, hint: 'A word related to ' + topic + ': ' + translation });
     } catch (e) {
-      result.push({
-        term: w,
-        translation: w,
-        hint: `Word related to ${topic}`
-      });
+      result.push({ term: w, translation: w, hint: 'Word related to ' + topic });
     }
   }
-
   return result;
 }
 
@@ -212,100 +185,61 @@ async function generateFromTopic(topic, sourceLang = 'en', targetLang = 'es') {
 async function extractFromText(text, sourceLang = 'en', targetLang = 'es') {
   if (OPENAI_API_KEY) {
     try {
-      console.log('Calling OpenAI API for text vocabulary extraction...');
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: `You are an educational AI helper. Scan the following lesson text and extract key vocabulary words/phrases (up to 8) that are in the target language (${targetLang}) and explain them in the source language (${sourceLang}).
-              
-              Format the response as a JSON array of objects, each having:
-              - "term": the word in the target language (${targetLang})
-              - "translation": the translation in the source language (${sourceLang})
-              - "hint": a descriptive definition or clue in the source language.
-              
-              Lesson text:
-              "${text}"
-              
-              Return ONLY the raw JSON array. No markdown, no text wrapping.`
-            }
-          ],
-          temperature: 0.5
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        let content = data.choices[0].message.content.trim();
-        if (content.startsWith('```json')) content = content.slice(7);
-        if (content.startsWith('```')) content = content.slice(3);
-        if (content.endsWith('```')) content = content.slice(0, -3);
-        
-        return JSON.parse(content.trim());
-      }
+      const prompt =
+        'You are an educational AI helper. Scan the following lesson text and extract up to 8 key vocabulary words/phrases. For each, give "term" in the target language (' +
+        targetLang +
+        '), "translation" in the source language (' +
+        sourceLang +
+        '), and a short "hint" in the source language. Lesson text: "' +
+        text +
+        '". Return ONLY the raw JSON array. No markdown.';
+      return await callOpenAi(prompt, 0.5);
     } catch (e) {
-      console.error('OpenAI API text extraction failed, falling back to local parser:', e);
+      console.error('OpenAI extraction failed, using offline parser:', e.message);
     }
   }
 
-  // Smart Offline Fallback: Extract terms enclosed in quotation marks, e.g., "term" (translation)
   console.log('Running smart offline text vocabulary extraction...');
   const foundWords = [];
-  
-  // Pattern matches: "foreign_term" (translation) or "foreign_term" - translation
-  // e.g. "el queso" (cheese)
+
+  // 1) Best signal: terms written as "foreign term" (translation)
   const pattern = /"([^"]+)"\s*\(([^)]+)\)/g;
   let match;
-  let idCounter = 1;
-
   while ((match = pattern.exec(text)) !== null && foundWords.length < 8) {
-    const term = match[1].trim();
-    const translation = match[2].trim();
     foundWords.push({
-      term,
-      translation,
-      hint: `Extracted term from the lesson text: "${term}"`
+      term: match[1].trim(),
+      translation: match[2].trim(),
+      hint: 'Extracted from the lesson: "' + match[1].trim() + '"',
     });
   }
+  if (foundWords.length > 0) return foundWords;
 
-  // If we couldn't parse anything with quotes, do a basic regex split for bracketed items
-  if (foundWords.length === 0) {
-    const bracketsPattern = /([A-Za-z\u0600-\u06FF\s]+)\s*\(([^)]+)\)/g;
-    pattern.lastIndex = 0; // reset
-    while ((match = bracketsPattern.exec(text)) !== null && foundWords.length < 5) {
-      const term = match[1].trim();
-      const translation = match[2].trim();
-      // Skip short articles or empty matches
-      if (term.length > 2 && translation.length > 2) {
-        foundWords.push({
-          term,
-          translation,
-          hint: `Context term: ${term}`
-        });
-      }
+  // 2) Otherwise pick salient words from the lesson and translate them.
+  const tokens = (text.toLowerCase().match(/[a-z\u00c0-\u024f]{4,}/g) || []);
+  const unique = [];
+  for (const tk of tokens) {
+    if (!STOP_WORDS.has(tk) && unique.indexOf(tk) === -1) unique.push(tk);
+    if (unique.length >= 8) break;
+  }
+
+  if (unique.length > 0) {
+    const out = [];
+    for (const w of unique) {
+      const term = await translateText(w, sourceLang, targetLang);
+      out.push({ term: term, translation: w, hint: 'Key word from the lesson: ' + w });
     }
+    return out;
   }
 
-  // Static list if the text had no recognizable vocabulary format
-  if (foundWords.length === 0) {
-    return [
-      { term: 'ejemplo', translation: 'example', hint: 'Something that representative of a group' },
-      { term: 'estudiante', translation: 'student', hint: 'A person who is studying' },
-      { term: 'lección', translation: 'lesson', hint: 'An amount of teaching given at one time' }
-    ];
-  }
-
-  return foundWords;
+  // 3) Last resort static list.
+  return [
+    { term: 'ejemplo', translation: 'example', hint: 'Something representative of a group' },
+    { term: 'estudiante', translation: 'student', hint: 'A person who is studying' },
+    { term: 'leccion', translation: 'lesson', hint: 'An amount of teaching given at one time' },
+  ];
 }
 
 module.exports = {
   generateFromTopic,
-  extractFromText
+  extractFromText,
 };

@@ -16,6 +16,16 @@ import {
   Crown
 } from 'lucide-react';
 
+/* Every playable game mode (kept in sync with GamePlayer.jsx). */
+const GAME_MODES = [
+  { mode: 'matching', label: 'Memory Match' },
+  { mode: 'flashcards', label: 'Flashcards' },
+  { mode: 'quiz', label: 'Quiz' },
+  { mode: 'listening', label: 'Listen' },
+  { mode: 'scramble', label: 'Spelling' },
+  { mode: 'typein', label: 'Type-In' }
+];
+
 /* Layout-only style objects (theme colours come from index.css classes). */
 const s = {
   loading: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '14px', color: 'var(--text-muted)' },
@@ -29,7 +39,10 @@ const s = {
   metaCount: { fontSize: '12px', color: 'var(--text-muted)' },
   cardTitle: { fontSize: '17px', fontWeight: 700 },
   cardDesc: { fontSize: '13px' },
-  footerBtns: { display: 'flex', gap: '8px', marginTop: 'auto', alignItems: 'center' },
+  gameModeLabel: { fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: 'auto' },
+  gameModeRow: { display: 'flex', flexWrap: 'wrap', gap: '6px' },
+  gameChip: { flex: '1 1 calc(33.333% - 6px)', minWidth: '84px', padding: '8px 6px', fontSize: '12px', textAlign: 'center' },
+  editRow: { display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' },
   btnFlex: { flex: 1 },
   emptyBox: { padding: '44px 24px', textAlign: 'center', color: 'var(--text-muted)' },
   courseStack: { display: 'flex', flexDirection: 'column', gap: '14px' },
@@ -37,16 +50,18 @@ const s = {
   courseMeta: { display: 'flex', flexWrap: 'wrap', gap: '14px', fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px' },
   linkedTag: { color: 'var(--color-success)', fontWeight: 600 },
   btnRow: { display: 'flex', gap: '8px' },
-  langSelectRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' },
+  langSelectRow: { display: 'flex', flexWrap: 'wrap', gap: '14px' },
+  langField: { flex: '1 1 180px' },
   aiBox: { background: 'var(--glass)', border: '1px solid var(--border-strong)', borderRadius: '14px', padding: '16px' },
   aiHeader: { display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-color)', fontWeight: 700, fontSize: '13px', marginBottom: '12px' },
-  aiHeaderBetween: { display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-color)', fontWeight: 700, fontSize: '13px', marginBottom: '12px', justifyContent: 'space-between' },
+  aiHeaderBetween: { display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-color)', fontWeight: 700, fontSize: '13px', marginBottom: '12px', justifyContent: 'space-between', flexWrap: 'wrap' },
   aiTitle: { display: 'flex', alignItems: 'center', gap: '8px' },
-  aiInputRow: { display: 'flex', gap: '8px' },
+  aiInputRow: { display: 'flex', flexWrap: 'wrap', gap: '8px' },
   aiTrialNote: { fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' },
-  wordsHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' },
+  wordsHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' },
   wordsList: { display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '300px', overflowY: 'auto', paddingRight: '4px' },
-  wordRow: { display: 'grid', gridTemplateColumns: '1fr 1fr 0.8fr auto', gap: '8px', alignItems: 'center' },
+  wordRow: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' },
+  wordInput: { flex: '1 1 140px', minWidth: '110px' },
   extractedBox: { marginTop: '14px', background: 'var(--bg-elevated)', borderRadius: '10px', padding: '12px' },
   extractedChip: { fontSize: '13px', padding: '5px 0', borderBottom: '1px solid var(--border-color)' },
   brandingGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' },
@@ -453,7 +468,7 @@ export default function TeacherDashboard({ activeTab, user, organization, update
           <div className="page-header">
             <div>
               <h1 className="page-title">Vocabulary Game Sets</h1>
-              <p className="page-subtitle">Add terms and create interactive matching and quiz games for your students.</p>
+              <p className="page-subtitle">Add terms once, then launch any of the 6 learning games for your students.</p>
             </div>
             <button
               onClick={() => {
@@ -482,8 +497,22 @@ export default function TeacherDashboard({ activeTab, user, organization, update
                   </div>
                   <h3 style={s.cardTitle}>{set.title}</h3>
                   <p className="text-muted" style={s.cardDesc}>{set.description || 'No description provided.'}</p>
-                  <div style={s.footerBtns}>
-                    <button onClick={() => onLaunchGame(set.id, 'matching')} className="action-button-primary" style={s.btnFlex}>Play Game</button>
+
+                  <div style={s.gameModeLabel}>Launch a game</div>
+                  <div style={s.gameModeRow}>
+                    {GAME_MODES.map((g, i) => (
+                      <button
+                        key={g.mode}
+                        onClick={() => onLaunchGame(set.id, g.mode)}
+                        className={i === 0 ? 'action-button-primary' : 'action-button-secondary'}
+                        style={s.gameChip}
+                      >
+                        {g.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={s.editRow}>
                     <button
                       onClick={async () => {
                         const detailed = await api.get(`/sets/${set.id}`);
@@ -498,7 +527,7 @@ export default function TeacherDashboard({ activeTab, user, organization, update
                     </button>
                     <button
                       onClick={() => {
-                        if (window.confirm('Delete this word set and all its matching games?')) {
+                        if (window.confirm('Delete this word set and all its games?')) {
                           api.delete(`/sets/${set.id}`).then(() => {
                             setSuccess('Word set deleted.');
                             loadDashboardData();
@@ -827,7 +856,7 @@ export default function TeacherDashboard({ activeTab, user, organization, update
             <textarea value={setForm.description} onChange={(e) => setSetForm({ ...setForm, description: e.target.value })} className="form-input-control" placeholder="Brief summary of words..." rows={2} />
           </div>
           <div style={s.langSelectRow}>
-            <div className="form-group">
+            <div className="form-group" style={s.langField}>
               <label>Source Lang (Student reads)</label>
               <select value={setForm.source_lang} onChange={(e) => setSetForm({ ...setForm, source_lang: e.target.value })} className="form-input-control">
                 <option value="en">English (en)</option>
@@ -836,7 +865,7 @@ export default function TeacherDashboard({ activeTab, user, organization, update
                 <option value="fr">French (fr)</option>
               </select>
             </div>
-            <div className="form-group">
+            <div className="form-group" style={s.langField}>
               <label>Target Lang (Student learns)</label>
               <select value={setForm.target_lang} onChange={(e) => setSetForm({ ...setForm, target_lang: e.target.value })} className="form-input-control">
                 <option value="es">Spanish (es)</option>
@@ -853,7 +882,7 @@ export default function TeacherDashboard({ activeTab, user, organization, update
               <span>AI Vocabulary Autofill Helper</span>
             </div>
             <div style={s.aiInputRow}>
-              <input type="text" placeholder="Topic (e.g. airport, clothing, animals)" value={aiTopic} onChange={(e) => setAiTopic(e.target.value)} className="form-input-control" style={s.btnFlex} />
+              <input type="text" placeholder="Topic (e.g. airport, clothing, animals)" value={aiTopic} onChange={(e) => setAiTopic(e.target.value)} className="form-input-control" style={s.wordInput} />
               <button type="button" onClick={handleAiAutofill} className="action-button-primary" disabled={aiLoading || !aiTopic}>
                 {aiLoading ? 'Autofilling...' : 'Autofill'}
               </button>
@@ -871,9 +900,9 @@ export default function TeacherDashboard({ activeTab, user, organization, update
             <div style={s.wordsList}>
               {setForm.words.map((word, idx) => (
                 <div key={idx} style={s.wordRow}>
-                  <input type="text" placeholder="Term (e.g. el agua)" value={word.term} onChange={(e) => handleWordFieldChange(idx, 'term', e.target.value)} className="form-input-control" required />
-                  <input type="text" placeholder="Translation (water)" value={word.translation} onChange={(e) => handleWordFieldChange(idx, 'translation', e.target.value)} className="form-input-control" required />
-                  <input type="text" placeholder="Hint (Fluid)" value={word.hint} onChange={(e) => handleWordFieldChange(idx, 'hint', e.target.value)} className="form-input-control" />
+                  <input type="text" placeholder="Term (e.g. el agua)" value={word.term} onChange={(e) => handleWordFieldChange(idx, 'term', e.target.value)} className="form-input-control" style={s.wordInput} required />
+                  <input type="text" placeholder="Translation (water)" value={word.translation} onChange={(e) => handleWordFieldChange(idx, 'translation', e.target.value)} className="form-input-control" style={s.wordInput} required />
+                  <input type="text" placeholder="Hint (Fluid)" value={word.hint} onChange={(e) => handleWordFieldChange(idx, 'hint', e.target.value)} className="form-input-control" style={s.wordInput} />
                   <button type="button" onClick={() => handleRemoveWordRow(idx)} className="action-button-danger">
                     <Trash2 size={14} />
                   </button>
@@ -914,7 +943,7 @@ export default function TeacherDashboard({ activeTab, user, organization, update
             )}
             {extractedWords.length > 0 && (
               <div style={s.extractedBox}>
-                <p className="text-muted" style={s.cardDesc}>Extracted Words (will automatically create a linked matching game):</p>
+                <p className="text-muted" style={s.cardDesc}>Extracted Words (will automatically create a linked game set):</p>
                 <div>
                   {extractedWords.map((w, idx) => (
                     <div key={idx} style={s.extractedChip}>
