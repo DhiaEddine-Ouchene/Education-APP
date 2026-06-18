@@ -30,6 +30,13 @@ const MODE_LABELS = {
   matching: 'Memory Match', quiz: 'Multiple Choice', flashcards: 'Flashcards',
   type: 'Type the Word', listen: 'Listening', scramble: 'Word Scramble',
 };
+// Accept alternative mode names used by the dashboards so every button works.
+const MODE_ALIASES = {
+  listening: 'listen', typein: 'type', 'type-in': 'type', spelling: 'scramble',
+  memory: 'matching', match: 'matching', 'multiple-choice': 'quiz', mcq: 'quiz',
+  flashcard: 'flashcards', cards: 'flashcards',
+};
+const normalizeMode = (m) => MODE_ALIASES[m] || m;
 
 function speak(text, langCode) {
   try {
@@ -62,6 +69,7 @@ const cellStyle = (base, isMatched, isSel, isWrong) => {
 };
 
 export default function GamePlayer({ setId, mode = 'flashcards', onClose }) {
+  const gameMode = normalizeMode(mode);
   const [set, setSet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -88,7 +96,7 @@ export default function GamePlayer({ setId, mode = 'flashcards', onClose }) {
     setFinished(true);
     if (!savedRef.current) {
       savedRef.current = true;
-      api.post('/sets/' + setId + '/progress', { gameMode: mode, score: finalScore, totalWords: words.length })
+      api.post('/sets/' + setId + '/progress', { gameMode: gameMode, score: finalScore, totalWords: words.length })
         .catch(() => {});
     }
   };
@@ -100,7 +108,7 @@ export default function GamePlayer({ setId, mode = 'flashcards', onClose }) {
         <div style={st.topLeft}>
           <Sparkles size={18} style={st.sparkle} />
           <strong style={st.title}>{(set && set.title) || 'Loading…'}</strong>
-          <span style={st.badge}>{MODE_LABELS[mode] || mode}</span>
+          <span style={st.badge}>{MODE_LABELS[gameMode] || gameMode}</span>
         </div>
         <button onClick={onClose} style={st.closeBtn} aria-label="Close game"><X size={20} /></button>
       </div>
@@ -115,7 +123,7 @@ export default function GamePlayer({ setId, mode = 'flashcards', onClose }) {
 
   const common = { words, targetLang, sourceLang, termDir, onFinish: finish };
   let Game;
-  switch (mode) {
+  switch (gameMode) {
     case 'matching': Game = <MatchingGame {...common} />; break;
     case 'quiz': Game = <QuizGame {...common} />; break;
     case 'type': Game = <TypeGame {...common} />; break;
