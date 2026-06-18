@@ -1,0 +1,430 @@
+{
+  "organizations": [
+    {
+      "id": "org-vivid",
+      "name": "Vivid Language Academy",
+      "slug": "vivid-academy",
+      "logo_data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAE8ElEQVR4AexYWSh9XRRfmV5MCQ+KRCTzXIZICS8kESLlQcqcB5E5U3niwQOZCuHBkKKQEhIpiniRMmQmEgkZvvvbffd2j/v537tv9/t3O07dte/ea6299v7t3z57r3MMiOjrNwkAy/D+np8EWOxcSwxLDItsBaQtLTJCVeBIDKssicgUEsMiI1QFjsSwypKITCExLDJCv8MhiWGVJRGZQmJYHaFGRkZkYmKiN2JoaKhuygI7N8Pd3d30+vqqN9LW1iYApK7BDfj29paOjo70Ru7u7tRhFNi5AZeVlZGTk9NfEWdnZ7Xj1NfXCwCpa3ADdnFxobCwsB8FA+I5V/bx8PCAWiPx8/NTxI6IiGD14OBg1tfU1JS15bExF2bgKLgBV1VV0erq6o9iYGBAiYmJAvvAwAD5+vqqnRb6Dg4OKvouLS2x+sLCAgE8ACqPjbmoDfrNgRvw5uYmjY+P09XV1bdQRJOTk5ScnExZWVk0OzursAcGBlJnZycFBQUpdP9ViY6OJktLS4Hp8/OTAByLhrrAqEWDG3BHRwelpKTQ9va2ynDp6ek0NDREaWlplJeXJ7CHhIRQQUGBQPe9gefRwcFBoH5/f6eMjAwaGxsT6LVtcAPWZCBcW3/yA9OQP/ko256engiHpbJO27pOAZeXl1Nra+uPc/Hx8aHY2Fgmzc3NVFlZSdDJO2Db3tzcyJuCf2z1nJwcgU6bhk4BNzQ0UG1t7Y/zCAgIoPj4eGYHcICWCw6krq4utgj39/fMBwUyqerqalTZuYGDSi44S5iBo9ApYI5xFa5YADCNOxfKnp4eKi0tpeLiYiaoPz4+UmNjI319fVFLS4tCpqen0YVLdAa4sLCQcMBwjS5zHh4eptzcXNrd3ZW1iAGLiooi7AYIrjOc8CcnJ+w57u/vJ7los8V1Bnh0dJTUXRuLi4vU29vLgKFAva6ujvr6+uj8/BwqdodnZ2dT9r8yNzdH2Oo4pa2srBR62MPDw1kfzQv6ux8Ajo+P2XU2MjJCcXFxhGf+4OCAPj4+fpzz1NSU4rn/0YnDoDOGOcakw8NDmp+fJ2xTnn668OUGjMNjZ2eH5bQ8E0B6WFNTw9OF+a6vr1NCQoIgc2MGLQtuwPb29uTt7U1mZmaCIbe2tsjY2JixBwZXVlaYHfcqMqjMzEw6PT1lOp7C09OT9vb26Pr6WtANqas2yQg34KKiIrKxsVERnKi2trYsX0YWhbce+Lm5ubFk5PuEBbNXakRGRgpi29nZEa4lXF+IJ5fU1FTCu7lSV42q3IDb29vZiYpTVRO5vLykh4cHjb+Q4KVEOe7FxQW9vLwQdoqyHmCRwv7vXzxw9WB7mpubE7ZxaGgoYVKOjo5sha2trQm5r5eXF+3v71NMTAwtLy8T/PPz8wmJRVNTE0FQh25mZoaSkpLIwsKC1tbWyN3dncVALARFbIyBsTAmfNEHfZGJwUdT4Wb47e2NvephtV1dXdlpi+cZiQO23pHs8w8yIkwc23FiYoL8/f3ZrkCejTepkpISgqAOHbYx8uizszPCQm1sbBBiIBZiIjbGwMmOMeGLPuj7/PysKVbmxw0YGZX8OdKH/4qKCgZE04IbsKaB9dVPAqyvzOhqXhLDulpJfY0jMayvzOhqXr+LYdmqSYBliyDqn8SwqOmVgZMYli2CqH8Sw6KmVwbu1zH8DwAAAP//OpUpqAAAAAZJREFUAwChGUhqxYXAugAAAABJRU5ErkJggg==",
+      "theme_primary": "#24ebaf",
+      "theme_secondary": "#cebbbb",
+      "dark_mode": 1,
+      "plan": "School",
+      "stripe_customer_id": "cus_mock_h9mqe22i6",
+      "stripe_subscription_id": "sub_mock_xb5hrgrmt",
+      "ai_generations_count": 11,
+      "created_at": "2026-06-15T20:54:56.336Z"
+    },
+    {
+      "id": "org-arabic",
+      "name": "Global Arabic School",
+      "slug": "global-arabic",
+      "logo_data": null,
+      "theme_primary": "#059669",
+      "theme_secondary": "#34D399",
+      "dark_mode": 1,
+      "plan": "School",
+      "stripe_customer_id": "cus_mock_arabic",
+      "stripe_subscription_id": "sub_mock_arabic",
+      "ai_generations_count": 12,
+      "created_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "org-acme",
+      "name": "Acme Español",
+      "slug": "acme-es",
+      "logo_data": null,
+      "theme_primary": "#DC2626",
+      "theme_secondary": "#F87171",
+      "dark_mode": 0,
+      "plan": "Pro",
+      "stripe_customer_id": "cus_mock_k1nsi048b",
+      "stripe_subscription_id": "sub_mock_o3waiatyw",
+      "ai_generations_count": 1,
+      "created_at": "2026-06-15T20:54:56.337Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "usr-admin",
+      "organization_id": null,
+      "email": "admin@edumatch.com",
+      "password_hash": "$2a$10$fLoKWigCrTESP7RQ2PPQa.h/kzjL1iEWaPGXNSOOr5Jikn8coJgAu",
+      "role": "admin",
+      "name": "Platform Admin",
+      "created_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "usr-vivid-t1",
+      "organization_id": "org-vivid",
+      "email": "teacher@vivid.com",
+      "password_hash": "$2a$10$fLoKWigCrTESP7RQ2PPQa.h/kzjL1iEWaPGXNSOOr5Jikn8coJgAu",
+      "role": "teacher",
+      "name": "John Doe",
+      "created_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "usr-vivid-s1",
+      "organization_id": "org-vivid",
+      "email": "alice@vivid.com",
+      "password_hash": "$2a$10$fLoKWigCrTESP7RQ2PPQa.h/kzjL1iEWaPGXNSOOr5Jikn8coJgAu",
+      "role": "student",
+      "name": "Alice Smith",
+      "created_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "usr-vivid-s2",
+      "organization_id": "org-vivid",
+      "email": "bob@vivid.com",
+      "password_hash": "$2a$10$fLoKWigCrTESP7RQ2PPQa.h/kzjL1iEWaPGXNSOOr5Jikn8coJgAu",
+      "role": "student",
+      "name": "Bob Jones",
+      "created_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "usr-arabic-t1",
+      "organization_id": "org-arabic",
+      "email": "teacher@arabic.com",
+      "password_hash": "$2a$10$fLoKWigCrTESP7RQ2PPQa.h/kzjL1iEWaPGXNSOOr5Jikn8coJgAu",
+      "role": "teacher",
+      "name": "Fatima Al-Sudais",
+      "created_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "usr-arabic-s1",
+      "organization_id": "org-arabic",
+      "email": "khalid@arabic.com",
+      "password_hash": "$2a$10$fLoKWigCrTESP7RQ2PPQa.h/kzjL1iEWaPGXNSOOr5Jikn8coJgAu",
+      "role": "student",
+      "name": "Khalid Mansoor",
+      "created_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "usr-acme-t1",
+      "organization_id": "org-acme",
+      "email": "teacher@acme.com",
+      "password_hash": "$2a$10$fLoKWigCrTESP7RQ2PPQa.h/kzjL1iEWaPGXNSOOr5Jikn8coJgAu",
+      "role": "teacher",
+      "name": "Carlos Santana",
+      "created_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "usr-acme-s1",
+      "organization_id": "org-acme",
+      "email": "student@acme.com",
+      "password_hash": "$2a$10$fLoKWigCrTESP7RQ2PPQa.h/kzjL1iEWaPGXNSOOr5Jikn8coJgAu",
+      "role": "student",
+      "name": "Diego Lopez",
+      "created_at": "2026-06-15T20:54:56.337Z"
+    }
+  ],
+  "word_sets": [
+    {
+      "id": "set-es-food",
+      "organization_id": "org-vivid",
+      "creator_id": "usr-vivid-t1",
+      "title": "Spanish Culinary Delights",
+      "description": "Essential food vocabulary",
+      "source_lang": "en",
+      "target_lang": "es",
+      "created_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "set-ar-greet",
+      "organization_id": "org-arabic",
+      "creator_id": "usr-arabic-t1",
+      "title": "Basic Arabic Greetings",
+      "description": "Introductions in Arabic",
+      "source_lang": "en",
+      "target_lang": "ar",
+      "created_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "set-es-travel",
+      "organization_id": "org-acme",
+      "creator_id": "usr-acme-t1",
+      "title": "Spanish Travel Vocab",
+      "description": "Airport and hotel words",
+      "source_lang": "en",
+      "target_lang": "es",
+      "created_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "id-1781743756460-ptmbmn",
+      "organization_id": "org-vivid",
+      "creator_id": "usr-vivid-t1",
+      "title": "Vocab: Lesson 1: Eating in Madrid",
+      "description": "Vocabulary extracted from lesson: Lesson 1: Eating in Madrid",
+      "source_lang": "en",
+      "target_lang": "es",
+      "created_at": "2026-06-18T00:49:16.460Z"
+    },
+    {
+      "id": "id-1781743903991-i54mgc",
+      "organization_id": "org-vivid",
+      "creator_id": "usr-vivid-t1",
+      "title": "video games",
+      "description": "test",
+      "source_lang": "en",
+      "target_lang": "ar",
+      "created_at": "2026-06-18T00:51:43.991Z"
+    }
+  ],
+  "words": [
+    {
+      "id": "w-sp-1",
+      "word_set_id": "set-es-food",
+      "term": "el pan",
+      "translation": "bread",
+      "hint": "Baked flour dough"
+    },
+    {
+      "id": "w-sp-2",
+      "word_set_id": "set-es-food",
+      "term": "la manzana",
+      "translation": "apple",
+      "hint": "Crisp red or green fruit"
+    },
+    {
+      "id": "w-sp-3",
+      "word_set_id": "set-es-food",
+      "term": "el queso",
+      "translation": "cheese",
+      "hint": "Dairy product from curd"
+    },
+    {
+      "id": "w-sp-4",
+      "word_set_id": "set-es-food",
+      "term": "el agua",
+      "translation": "water",
+      "hint": "Essential transparent liquid"
+    },
+    {
+      "id": "w-sp-5",
+      "word_set_id": "set-es-food",
+      "term": "el jamón",
+      "translation": "ham",
+      "hint": "Cured pork meat"
+    },
+    {
+      "id": "w-sp-6",
+      "word_set_id": "set-es-food",
+      "term": "la leche",
+      "translation": "milk",
+      "hint": "White dairy drink"
+    },
+    {
+      "id": "w-ar-1",
+      "word_set_id": "set-ar-greet",
+      "term": "مرحباً",
+      "translation": "Hello",
+      "hint": "General greeting"
+    },
+    {
+      "id": "w-ar-2",
+      "word_set_id": "set-ar-greet",
+      "term": "كيف حالك؟",
+      "translation": "How are you?",
+      "hint": "Asking about wellbeing"
+    },
+    {
+      "id": "w-ar-3",
+      "word_set_id": "set-ar-greet",
+      "term": "شكراً",
+      "translation": "Thank you",
+      "hint": "Expressing gratitude"
+    },
+    {
+      "id": "w-ar-4",
+      "word_set_id": "set-ar-greet",
+      "term": "صباح الخير",
+      "translation": "Good morning",
+      "hint": "Morning greeting"
+    },
+    {
+      "id": "w-ar-5",
+      "word_set_id": "set-ar-greet",
+      "term": "مع السلامة",
+      "translation": "Goodbye",
+      "hint": "Farewell phrase"
+    },
+    {
+      "id": "w-tr-1",
+      "word_set_id": "set-es-travel",
+      "term": "el aeropuerto",
+      "translation": "airport",
+      "hint": "Where planes land"
+    },
+    {
+      "id": "w-tr-2",
+      "word_set_id": "set-es-travel",
+      "term": "el hotel",
+      "translation": "hotel",
+      "hint": "Where you stay"
+    },
+    {
+      "id": "w-tr-3",
+      "word_set_id": "set-es-travel",
+      "term": "el pasaporte",
+      "translation": "passport",
+      "hint": "Travel ID document"
+    },
+    {
+      "id": "w-tr-4",
+      "word_set_id": "set-es-travel",
+      "term": "el boleto",
+      "translation": "ticket",
+      "hint": "Transit payment proof"
+    },
+    {
+      "id": "id-1781743756462-gnmiqx",
+      "word_set_id": "id-1781743756460-ptmbmn",
+      "term": "el pan",
+      "translation": "bread",
+      "hint": "Extracted term from the lesson text: \"el pan\""
+    },
+    {
+      "id": "id-1781743756463-7dhcur",
+      "word_set_id": "id-1781743756460-ptmbmn",
+      "term": "el queso",
+      "translation": "cheese",
+      "hint": "Extracted term from the lesson text: \"el queso\""
+    },
+    {
+      "id": "id-1781743756464-lsnlq0",
+      "word_set_id": "id-1781743756460-ptmbmn",
+      "term": "el jamón",
+      "translation": "cured ham",
+      "hint": "Extracted term from the lesson text: \"el jamón\""
+    },
+    {
+      "id": "id-1781743756464-miyg7k",
+      "word_set_id": "id-1781743756460-ptmbmn",
+      "term": "el agua",
+      "translation": "water",
+      "hint": "Extracted term from the lesson text: \"el agua\""
+    },
+    {
+      "id": "id-1781743756465-156p8q",
+      "word_set_id": "id-1781743756460-ptmbmn",
+      "term": "la leche",
+      "translation": "milk",
+      "hint": "Extracted term from the lesson text: \"la leche\""
+    },
+    {
+      "id": "id-1781743756465-3ogj5p",
+      "word_set_id": "id-1781743756460-ptmbmn",
+      "term": "la manzana",
+      "translation": "apple",
+      "hint": "Extracted term from the lesson text: \"la manzana\""
+    },
+    {
+      "id": "id-1781743903993-oiei99",
+      "word_set_id": "id-1781743903991-i54mgc",
+      "term": "لعبة فيديو",
+      "translation": "video game",
+      "hint": "A term related to video game: video game"
+    },
+    {
+      "id": "id-1781743903994-1buxdx",
+      "word_set_id": "id-1781743903991-i54mgc",
+      "term": "مرحبًا",
+      "translation": "hello",
+      "hint": "A term related to video game: hello"
+    },
+    {
+      "id": "id-1781743903995-xh45t4",
+      "word_set_id": "id-1781743903991-i54mgc",
+      "term": "صديق",
+      "translation": "friend",
+      "hint": "A term related to video game: friend"
+    },
+    {
+      "id": "id-1781743903996-d0qdi8",
+      "word_set_id": "id-1781743903991-i54mgc",
+      "term": "مدرسة",
+      "translation": "school",
+      "hint": "A term related to video game: school"
+    },
+    {
+      "id": "id-1781743903996-jk8s23",
+      "word_set_id": "id-1781743903991-i54mgc",
+      "term": "سعيد",
+      "translation": "happy",
+      "hint": "A term related to video game: happy"
+    },
+    {
+      "id": "id-1781743903997-lsx5ef",
+      "word_set_id": "id-1781743903991-i54mgc",
+      "term": "عائلة",
+      "translation": "family",
+      "hint": "A term related to video game: family"
+    }
+  ],
+  "courses": [
+    {
+      "id": "course-vivid-1",
+      "organization_id": "org-vivid",
+      "creator_id": "usr-vivid-t1",
+      "title": "Lesson 1: Eating in Madrid",
+      "content": "Welcome to your first Spanish lesson!\n\nIn Madrid, breakfast is usually simple: \"el pan\" (bread) with tomato or butter, accompanied by coffee. For lunch, Spaniards enjoy \"el queso\" (cheese) and \"el jamón\" (cured ham) alongside a cold glass of \"el agua\" (water). A glass of \"la leche\" (milk) with dessert, such as a sweet \"la manzana\" (apple), finishes the meal perfectly.",
+      "word_set_id": "id-1781743756460-ptmbmn",
+      "created_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "course-arabic-1",
+      "organization_id": "org-arabic",
+      "creator_id": "usr-arabic-t1",
+      "title": "Lesson 1: First Meetings",
+      "content": "When meeting someone for the first time in the Arab world, begin with a warm \"مرحباً\" (Hello). Ask \"كيف حالك؟\" (How are you?) to show genuine interest. Respond with \"شكراً\" (Thank you) when offered hospitality. Greet early risers with \"صباح الخير\" (Good morning) and part ways by saying \"مع السلامة\" (Goodbye).",
+      "word_set_id": "set-ar-greet",
+      "created_at": "2026-06-15T20:54:56.337Z"
+    }
+  ],
+  "student_progress": [
+    {
+      "id": "prog-1",
+      "student_id": "usr-vivid-s1",
+      "word_set_id": "set-es-food",
+      "game_mode": "matching",
+      "score": 6,
+      "total_words": 6,
+      "completed_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "prog-2",
+      "student_id": "usr-vivid-s1",
+      "word_set_id": "set-es-food",
+      "game_mode": "quiz",
+      "score": 5,
+      "total_words": 6,
+      "completed_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "prog-3",
+      "student_id": "usr-vivid-s2",
+      "word_set_id": "set-es-food",
+      "game_mode": "flashcards",
+      "score": 6,
+      "total_words": 6,
+      "completed_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "prog-4",
+      "student_id": "usr-arabic-s1",
+      "word_set_id": "set-ar-greet",
+      "game_mode": "matching",
+      "score": 5,
+      "total_words": 5,
+      "completed_at": "2026-06-15T20:54:56.337Z"
+    },
+    {
+      "id": "prog-5",
+      "student_id": "usr-acme-s1",
+      "word_set_id": "set-es-travel",
+      "game_mode": "scramble",
+      "score": 3,
+      "total_words": 4,
+      "completed_at": "2026-06-15T20:54:56.337Z"
+    }
+  ]
+}

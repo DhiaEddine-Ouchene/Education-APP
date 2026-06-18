@@ -1,0 +1,13 @@
+{
+  "name": "edumatch-platform",
+  "version": "1.0.0",
+  "description": "EduMatch — multi-tenant language-learning games SaaS (teacher/business + student + admin)",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node --no-warnings server.js",
+    "dev": "node --no-warnings --watch server.js"
+  },
+  "author": "EduMatch",
+  "license": "MIT"
+}
