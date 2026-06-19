@@ -1,5 +1,7 @@
 // Node native fetch is available in Node 18+
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 
 // Local fallback dictionary for offline mode
 const LOCAL_VOCAB_DB = {
@@ -70,6 +72,34 @@ async function translateText(text, fromLang, toLang) {
   return text;
 }
 
+async function callGemini(prompt) {
+  const url =
+    'https://generativelanguage.googleapis.com/v1beta/models/' +
+    GEMINI_MODEL +
+    ':generateContent?key=' +
+    GEMINI_API_KEY;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.6, responseMimeType: 'application/json' },
+    }),
+  });
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error('Gemini error: ' + errText);
+  }
+  const data = await response.json();
+  const candidate = data.candidates && data.candidates[0];
+  const parts = candidate && candidate.content && candidate.content.parts;
+  let content = parts && parts[0] && parts[0].text ? parts[0].text.trim() : '';
+  if (content.startsWith('```json')) content = content.slice(7);
+  if (content.startsWith('```')) content = content.slice(3);
+  if (content.endsWith('```')) content = content.slice(0, -3);
+  return JSON.parse(content.trim());
+}
+
 async function callOpenAi(systemPrompt, temperature) {
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -100,17 +130,26 @@ async function callOpenAi(systemPrompt, temperature) {
  * Returns array of { term, translation, hint }
  */
 async function generateFromTopic(topic, sourceLang = 'en', targetLang = 'es') {
+  const topicPrompt =
+    'You are an educational AI helper. Generate a vocabulary list of exactly 6 words/phrases for the topic "' +
+    topic +
+    '". Source language (students read this): ' +
+    sourceLang +
+    '. Target language (students learn this): ' +
+    targetLang +
+    '. Format the response as a JSON array of objects, each having: "term" (the word/phrase in the target language), "translation" (the translation in the source language), and "hint" (a helpful descriptive clue in the source language). Return ONLY the raw JSON array. No explanations, no markdown.';
+
+  if (GEMINI_API_KEY) {
+    try {
+      return await callGemini(topicPrompt);
+    } catch (e) {
+      console.error('Gemini topic autofill failed, trying next provider:', e.message);
+    }
+  }
+
   if (OPENAI_API_KEY) {
     try {
-      const prompt =
-        'You are an educational AI helper. Generate a vocabulary list of exactly 6 words/phrases for the topic "' +
-        topic +
-        '". Source language (students read this): ' +
-        sourceLang +
-        '. Target language (students learn this): ' +
-        targetLang +
-        '. Format the response as a JSON array of objects, each having: "term" (the word/phrase in the target language), "translation" (the translation in the source language), and "hint" (a helpful descriptive clue in the source language). Return ONLY the raw JSON array. No explanations, no markdown.';
-      return await callOpenAi(prompt, 0.7);
+      return await callOpenAi(topicPrompt, 0.7);
     } catch (e) {
       console.error('OpenAI topic autofill failed, using offline generator:', e.message);
     }
@@ -183,17 +222,26 @@ async function generateFromTopic(topic, sourceLang = 'en', targetLang = 'es') {
  * Returns array of { term, translation, hint }
  */
 async function extractFromText(text, sourceLang = 'en', targetLang = 'es') {
+  const extractPrompt =
+    'You are an educational AI helper. Scan the following lesson text and extract up to 8 of the most important and most frequently repeated vocabulary words/phrases. For each, give "term" in the target language (' +
+    targetLang +
+    '), "translation" in the source language (' +
+    sourceLang +
+    '), and a short "hint" in the source language. Lesson text: "' +
+    text +
+    '". Return ONLY the raw JSON array. No markdown.';
+
+  if (GEMINI_API_KEY) {
+    try {
+      return await callGemini(extractPrompt);
+    } catch (e) {
+      console.error('Gemini extraction failed, trying next provider:', e.message);
+    }
+  }
+
   if (OPENAI_API_KEY) {
     try {
-      const prompt =
-        'You are an educational AI helper. Scan the following lesson text and extract up to 8 of the most important and most frequently repeated vocabulary words/phrases. For each, give "term" in the target language (' +
-        targetLang +
-        '), "translation" in the source language (' +
-        sourceLang +
-        '), and a short "hint" in the source language. Lesson text: "' +
-        text +
-        '". Return ONLY the raw JSON array. No markdown.';
-      return await callOpenAi(prompt, 0.5);
+      return await callOpenAi(extractPrompt, 0.5);
     } catch (e) {
       console.error('OpenAI extraction failed, using offline parser:', e.message);
     }
